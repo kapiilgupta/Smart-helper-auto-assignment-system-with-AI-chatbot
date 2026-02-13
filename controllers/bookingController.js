@@ -1,7 +1,14 @@
 const Booking = require('../models/Booking');
 const Service = require('../models/Service');
 const Helper = require('../models/Helper');
-const { findAndAssignHelper, reassignHelper } = require('../services/assignmentService');
+const { findAndAssignHelper } = require('../services/assignmentService');
+const {
+    handleHelperRejection,
+    startResponseTimeout,
+    cancelResponseTimeout,
+    notifyHelperAssignment,
+    notifyUser
+} = require('../services/reassignmentService');
 
 /**
  * Create a new booking and auto-assign helper
@@ -38,6 +45,22 @@ const createBooking = async (req, res) => {
                 location,
                 service.category
             );
+
+            // Get Socket.IO instance
+            const io = req.app.get('io');
+
+            // Notify helper via Socket.IO
+            notifyHelperAssignment(assignmentResult.assignedHelper.id, assignmentResult.booking, io);
+
+            // Start 30-second timeout
+            startResponseTimeout(booking._id, assignmentResult.assignedHelper.id, io);
+
+            // Notify user
+            notifyUser(userId, 'helper_assigned', {
+                bookingId: booking._id,
+                helper: assignmentResult.assignedHelper,
+                message: 'Helper assigned to your booking!'
+            }, io);
 
             res.status(201).json({
                 message: 'Booking created and helper assigned successfully',
@@ -135,7 +158,7 @@ const getBookingById = async (req, res) => {
  */
 const acceptBooking = async (req, res) => {
     try {
-        const booking = await Booking.findById(req.params.id);
+        const booking = await Booking.findById(req.params.id).populate('userId', '-password');
 
         if (!booking) {
             return res.status(404).json({ message: 'Booking not found' });
@@ -145,8 +168,19 @@ const acceptBooking = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
+        // Cancel timeout since helper accepted
+        cancelResponseTimeout(booking._id);
+
         booking.status = 'accepted';
         await booking.save();
+
+        // Notify user via Socket.IO
+        const io = req.app.get('io');
+        notifyUser(booking.userId._id, 'booking_accepted', {
+            bookingId: booking._id,
+            message: 'Helper accepted your booking!',
+            booking
+        }, io);
 
         res.json({ message: 'Booking accepted', booking });
     } catch (error) {
@@ -172,41 +206,30 @@ const rejectBooking = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
-        // Update assignment history
-        const historyEntry = booking.assignmentHistory.find(
-            h => h.helperId.toString() === req.user.id && h.status === 'assigned'
-        );
-        if (historyEntry) {
-            historyEntry.status = 'rejected';
-            historyEntry.rejectedAt = new Date();
-            historyEntry.reason = reason;
-        }
+        // Cancel timeout
+        cancelResponseTimeout(booking._id);
 
-        booking.rejectionCount += 1;
+        // Get Socket.IO instance
+        const io = req.app.get('io');
 
-        // Make helper available again
-        await Helper.findByIdAndUpdate(req.user.id, {
-            availability: true,
-            $pull: { currentBookings: booking._id }
-        });
-
-        await booking.save();
-
-        // Try to reassign
+        // Use reassignment service
         try {
-            const reassignmentResult = await reassignHelper(booking._id);
+            const reassignmentResult = await handleHelperRejection(
+                booking._id,
+                req.user.id,
+                reason || 'Helper rejected the booking',
+                io
+            );
+
             res.json({
-                message: 'Booking rejected and reassigned to another helper',
-                booking: reassignmentResult.booking
+                message: reassignmentResult.message,
+                booking: reassignmentResult.booking,
+                assignedHelper: reassignmentResult.assignedHelper
             });
         } catch (reassignError) {
-            booking.status = 'pending';
-            booking.helperId = null;
-            await booking.save();
-
             res.json({
                 message: 'Booking rejected but no alternate helper available',
-                booking
+                error: reassignError.message
             });
         }
 
