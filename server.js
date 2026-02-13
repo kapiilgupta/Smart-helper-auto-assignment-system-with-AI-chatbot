@@ -49,6 +49,18 @@ initializeSocket(io);
 // Make io accessible to routes
 app.set('io', io);
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    const healthcheck = {
+        uptime: process.uptime(),
+        message: 'OK',
+        timestamp: Date.now(),
+        environment: process.env.NODE_ENV || 'development',
+        database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    };
+    res.status(200).json(healthcheck);
+});
+
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {

@@ -1,0 +1,6 @@
+# Keep SSL directory but ignore certificate files
+*.pem
+*.key
+*.crt
+*.csr
+!.gitkeep
