@@ -138,7 +138,7 @@ describe('Geofencing Utilities', () => {
             const userLocation = { latitude: 28.6139, longitude: 77.2090 };
             const sorted = sortByDistanceAndRating(helpers, userLocation);
 
-            expect(sorted[0].id).toBe(1); // Closest
+            expect(sorted[0].id).toBe(3); // Closest (77.2080, 28.6130)
         });
 
         test('should prioritize rating when distances are similar', () => {
