@@ -1,0 +1,231 @@
+<%- include('../partials/header') %>
+
+    <div class="container-fluid my-4">
+        <h2 class="mb-4"><i class="bi bi-people me-2"></i>Manage Helpers</h2>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" id="searchHelper" placeholder="Search by name...">
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="suspended">Suspended</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="availabilityFilter">
+                            <option value="">All</option>
+                            <option value="true">Online</option>
+                            <option value="false">Offline</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary w-100" onclick="applyFilters()">
+                            <i class="bi bi-funnel me-2"></i>Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Helpers Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Skills</th>
+                                <th>Rating</th>
+                                <th>Jobs</th>
+                                <th>Status</th>
+                                <th>Availability</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="helpersTable">
+                            <tr>
+                                <td colspan="9" class="text-center py-4">
+                                    <div class="spinner-border text-primary"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Helper Details Modal -->
+    <div class="modal fade" id="helperModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Helper Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="helperDetails"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allHelpers = [];
+
+        async function loadHelpers() {
+            try {
+                const response = await fetch('/api/admin/helpers', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    allHelpers = data.helpers;
+                    displayHelpers(allHelpers);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function displayHelpers(helpers) {
+            const tbody = document.getElementById('helpersTable');
+
+            if (helpers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center">No helpers found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = helpers.map(h => `
+        <tr>
+            <td><strong>${h.name}</strong></td>
+            <td>${h.email}</td>
+            <td>${h.phone || 'N/A'}</td>
+            <td><span class="badge bg-info">${h.skills?.join(', ') || 'None'}</span></td>
+            <td><span class="text-warning">★ ${h.rating?.toFixed(1) || '0.0'}</span></td>
+            <td>${h.completedBookings || 0}</td>
+            <td><span class="badge bg-${h.status === 'active' ? 'success' : 'danger'}">${h.status || 'active'}</span></td>
+            <td><span class="badge bg-${h.availability ? 'success' : 'secondary'}">${h.availability ? 'Online' : 'Offline'}</span></td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="viewHelper('${h._id}')">
+                    <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-${h.status === 'active' ? 'danger' : 'success'}" onclick="toggleStatus('${h._id}', '${h.status}')">
+                    <i class="bi bi-${h.status === 'active' ? 'ban' : 'check-circle'}"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        async function viewHelper(helperId) {
+            try {
+                const response = await fetch(`/api/admin/helpers/${helperId}`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showHelperDetails(data.helper);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function showHelperDetails(helper) {
+            const details = document.getElementById('helperDetails');
+            details.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Personal Information</h6>
+                <p><strong>Name:</strong> ${helper.name}</p>
+                <p><strong>Email:</strong> ${helper.email}</p>
+                <p><strong>Phone:</strong> ${helper.phone || 'N/A'}</p>
+                <p><strong>Rating:</strong> ★ ${helper.rating?.toFixed(1) || '0.0'}</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Work Information</h6>
+                <p><strong>Skills:</strong> ${helper.skills?.join(', ') || 'None'}</p>
+                <p><strong>Completed Jobs:</strong> ${helper.completedBookings || 0}</p>
+                <p><strong>Status:</strong> ${helper.status || 'active'}</p>
+                <p><strong>Availability:</strong> ${helper.availability ? 'Online' : 'Offline'}</p>
+            </div>
+        </div>
+        ${helper.location ? `
+            <div class="mt-3">
+                <h6>Current Location</h6>
+                <div id="helperMap" style="height: 300px; border-radius: 8px;"></div>
+            </div>
+        ` : ''}
+    `;
+
+            new bootstrap.Modal(document.getElementById('helperModal')).show();
+
+            if (helper.location && helper.location.coordinates) {
+                setTimeout(() => {
+                    const [lng, lat] = helper.location.coordinates;
+                    const map = L.map('helperMap').setView([lat, lng], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                    L.marker([lat, lng]).addTo(map).bindPopup(helper.name);
+                }, 300);
+            }
+        }
+
+        async function toggleStatus(helperId, currentStatus) {
+            const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
+            const action = newStatus === 'suspended' ? 'suspend' : 'activate';
+
+            if (!confirm(`Are you sure you want to ${action} this helper?`)) return;
+
+            try {
+                const response = await fetch(`/api/admin/helpers/${helperId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    alert(`Helper ${action}d successfully`);
+                    loadHelpers();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('searchHelper').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const availability = document.getElementById('availabilityFilter').value;
+
+            let filtered = allHelpers;
+
+            if (search) {
+                filtered = filtered.filter(h => h.name.toLowerCase().includes(search));
+            }
+            if (status) {
+                filtered = filtered.filter(h => h.status === status);
+            }
+            if (availability) {
+                filtered = filtered.filter(h => h.availability.toString() === availability);
+            }
+
+            displayHelpers(filtered);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadHelpers);
+    </script>
+
+    <%- include('../partials/footer') %>

@@ -1,0 +1,171 @@
+<%- include('../partials/header') %>
+
+    <div class="container-fluid my-4">
+        <h2 class="mb-4"><i class="bi bi-list-check me-2"></i>All Bookings</h2>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="assigned">Assigned</option>
+                            <option value="accepted">Accepted</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" class="form-control" id="fromDate">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" class="form-control" id="toDate">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" id="searchBooking" placeholder="Search user/helper...">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary w-100" onclick="applyFilters()">
+                            <i class="bi bi-funnel me-2"></i>Filter
+                        </button>
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn btn-outline-secondary w-100" onclick="exportData()">
+                            <i class="bi bi-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bookings Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Service</th>
+                                <th>User</th>
+                                <th>Helper</th>
+                                <th>Date</th>
+                                <th>Location</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTable">
+                            <tr>
+                                <td colspan="9" class="text-center py-4">
+                                    <div class="spinner-border text-primary"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allBookings = [];
+
+        async function loadBookings() {
+            try {
+                const response = await fetch('/api/admin/bookings', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    allBookings = data.bookings;
+                    displayBookings(allBookings);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function displayBookings(bookings) {
+            const tbody = document.getElementById('bookingsTable');
+
+            if (bookings.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center">No bookings found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = bookings.map(b => `
+        <tr>
+            <td><small>${b._id.substring(0, 8)}</small></td>
+            <td>${b.serviceId?.name || 'N/A'}</td>
+            <td>${b.userId?.name || 'N/A'}</td>
+            <td>${b.helperId?.name || 'Unassigned'}</td>
+            <td>${new Date(b.createdAt).toLocaleDateString()}</td>
+            <td>${b.location?.address?.city || 'N/A'}</td>
+            <td>₹${b.serviceId?.basePrice || 0}</td>
+            <td><span class="badge bg-${getStatusColor(b.status)}">${b.status}</span></td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="viewBooking('${b._id}')">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'completed': 'success',
+                'in-progress': 'primary',
+                'accepted': 'info',
+                'assigned': 'warning',
+                'pending': 'secondary',
+                'cancelled': 'danger'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function applyFilters() {
+            const status = document.getElementById('statusFilter').value;
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+            const search = document.getElementById('searchBooking').value.toLowerCase();
+
+            let filtered = allBookings;
+
+            if (status) {
+                filtered = filtered.filter(b => b.status === status);
+            }
+            if (fromDate) {
+                filtered = filtered.filter(b => new Date(b.createdAt) >= new Date(fromDate));
+            }
+            if (toDate) {
+                filtered = filtered.filter(b => new Date(b.createdAt) <= new Date(toDate));
+            }
+            if (search) {
+                filtered = filtered.filter(b =>
+                    b.userId?.name.toLowerCase().includes(search) ||
+                    b.helperId?.name.toLowerCase().includes(search)
+                );
+            }
+
+            displayBookings(filtered);
+        }
+
+        function viewBooking(bookingId) {
+            window.location.href = `/admin/booking/${bookingId}`;
+        }
+
+        function exportData() {
+            alert('Export functionality would download CSV/Excel file');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadBookings);
+    </script>
+
+    <%- include('../partials/footer') %>

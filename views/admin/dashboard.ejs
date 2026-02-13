@@ -1,0 +1,235 @@
+<%- include('../partials/header') %>
+
+    <div class="container-fluid my-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h2><i class="bi bi-shield-check me-2"></i>Admin Dashboard</h2>
+                <p class="text-muted">System overview and statistics</p>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card text-center card-elevated">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-check fs-1 text-primary mb-2"></i>
+                        <h3 class="mb-0" id="todayBookings">0</h3>
+                        <small class="text-muted">Bookings Today</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center card-elevated">
+                    <div class="card-body">
+                        <i class="bi bi-people fs-1 text-success mb-2"></i>
+                        <h3 class="mb-0" id="activeHelpers">0</h3>
+                        <small class="text-muted">Active Helpers</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center card-elevated">
+                    <div class="card-body">
+                        <i class="bi bi-graph-up fs-1 text-warning mb-2"></i>
+                        <h3 class="mb-0" id="successRate">0%</h3>
+                        <small class="text-muted">Success Rate (15 min)</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center card-elevated">
+                    <div class="card-body">
+                        <i class="bi bi-currency-rupee fs-1 text-info mb-2"></i>
+                        <h3 class="mb-0" id="todayRevenue">₹0</h3>
+                        <small class="text-muted">Revenue Today</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Booking Trends (Last 7 Days)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="bookingTrendsChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Booking Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Recent Bookings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="recentBookings">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Top Helpers</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="topHelpers">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <script>
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/admin/dashboard', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    updateStats(data.stats);
+                    renderCharts(data.charts);
+                    displayRecentBookings(data.recentBookings);
+                    displayTopHelpers(data.topHelpers);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Update stats
+        function updateStats(stats) {
+            document.getElementById('todayBookings').textContent = stats.todayBookings || 0;
+            document.getElementById('activeHelpers').textContent = stats.activeHelpers || 0;
+            document.getElementById('successRate').textContent = (stats.successRate || 0) + '%';
+            document.getElementById('todayRevenue').textContent = '₹' + (stats.todayRevenue || 0);
+        }
+
+        // Render charts
+        function renderCharts(chartData) {
+            // Booking Trends Chart
+            const trendsCtx = document.getElementById('bookingTrendsChart').getContext('2d');
+            new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: chartData?.trends?.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Bookings',
+                        data: chartData?.trends?.data || [12, 19, 15, 25, 22, 30, 28],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+
+            // Status Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'In Progress', 'Cancelled'],
+                    datasets: [{
+                        data: chartData?.status?.data || [65, 25, 10],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                    }]
+                }
+            });
+        }
+
+        // Display recent bookings
+        function displayRecentBookings(bookings) {
+            const container = document.getElementById('recentBookings');
+
+            if (!bookings || bookings.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">No recent bookings</p>';
+                return;
+            }
+
+            container.innerHTML = bookings.slice(0, 5).map(b => `
+        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+            <div>
+                <strong>${b.serviceId?.name || 'Service'}</strong>
+                <br><small class="text-muted">${b.userId?.name || 'User'}</small>
+            </div>
+            <span class="badge bg-${getStatusColor(b.status)}">${b.status}</span>
+        </div>
+    `).join('');
+        }
+
+        // Display top helpers
+        function displayTopHelpers(helpers) {
+            const container = document.getElementById('topHelpers');
+
+            if (!helpers || helpers.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">No helpers yet</p>';
+                return;
+            }
+
+            container.innerHTML = helpers.slice(0, 5).map((h, i) => `
+        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+            <div>
+                <strong>${i + 1}. ${h.name}</strong>
+                <br><small class="text-muted">${h.completedBookings || 0} jobs</small>
+            </div>
+            <div class="text-end">
+                <div class="text-warning">★ ${h.rating?.toFixed(1) || '0.0'}</div>
+            </div>
+        </div>
+    `).join('');
+        }
+
+        // Get status color
+        function getStatusColor(status) {
+            const colors = {
+                'completed': 'success',
+                'in-progress': 'primary',
+                'cancelled': 'danger',
+                'pending': 'warning'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        // Load on page load
+        document.addEventListener('DOMContentLoaded', loadDashboardData);
+    </script>
+
+    <%- include('../partials/footer') %>

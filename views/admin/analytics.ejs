@@ -1,0 +1,222 @@
+<%- include('../partials/header') %>
+
+    <div class="container-fluid my-4">
+        <h2 class="mb-4"><i class="bi bi-graph-up me-2"></i>Analytics & Reports</h2>
+
+        <!-- Date Range Selector -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">From Date</label>
+                        <input type="date" class="form-control" id="analyticsFromDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">To Date</label>
+                        <input type="date" class="form-control" id="analyticsToDate">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary w-100" onclick="loadAnalytics()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Booking Trends</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="bookingTrendsChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Service Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="serviceDistChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Helper Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="helperPerfChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Revenue by Service</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="revenueChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Avg Response Time</h6>
+                        <h3 id="avgResponseTime">--</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Completion Rate</h6>
+                        <h3 id="completionRate">--</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Avg Rating</h6>
+                        <h3 id="avgRating">--</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Total Revenue</h6>
+                        <h3 id="totalRevenue">--</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <script>
+        let charts = {};
+
+        async function loadAnalytics() {
+            try {
+                const fromDate = document.getElementById('analyticsFromDate').value;
+                const toDate = document.getElementById('analyticsToDate').value;
+
+                const params = new URLSearchParams();
+                if (fromDate) params.append('from', fromDate);
+                if (toDate) params.append('to', toDate);
+
+                const response = await fetch(`/api/admin/analytics?${params}`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    renderCharts(data);
+                    updateStats(data.stats);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function renderCharts(data) {
+            // Booking Trends
+            if (charts.trends) charts.trends.destroy();
+            charts.trends = new Chart(document.getElementById('bookingTrendsChart'), {
+                type: 'line',
+                data: {
+                    labels: data.trends?.labels || [],
+                    datasets: [{
+                        label: 'Bookings',
+                        data: data.trends?.data || [],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: true }
+            });
+
+            // Service Distribution
+            if (charts.services) charts.services.destroy();
+            charts.services = new Chart(document.getElementById('serviceDistChart'), {
+                type: 'pie',
+                data: {
+                    labels: data.services?.labels || [],
+                    datasets: [{
+                        data: data.services?.data || [],
+                        backgroundColor: ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444']
+                    }]
+                }
+            });
+
+            // Helper Performance
+            if (charts.helpers) charts.helpers.destroy();
+            charts.helpers = new Chart(document.getElementById('helperPerfChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.helpers?.labels || [],
+                    datasets: [{
+                        label: 'Completed Jobs',
+                        data: data.helpers?.data || [],
+                        backgroundColor: '#10b981'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: true }
+            });
+
+            // Revenue
+            if (charts.revenue) charts.revenue.destroy();
+            charts.revenue = new Chart(document.getElementById('revenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.revenue?.labels || [],
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: data.revenue?.data || [],
+                        backgroundColor: '#06b6d4'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: true }
+            });
+        }
+
+        function updateStats(stats) {
+            document.getElementById('avgResponseTime').textContent = (stats?.avgResponseTime || 0) + ' min';
+            document.getElementById('completionRate').textContent = (stats?.completionRate || 0) + '%';
+            document.getElementById('avgRating').textContent = '★ ' + (stats?.avgRating || 0).toFixed(1);
+            document.getElementById('totalRevenue').textContent = '₹' + (stats?.totalRevenue || 0);
+        }
+
+        // Set default dates (last 30 days)
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            const lastMonth = new Date(today);
+            lastMonth.setDate(today.getDate() - 30);
+
+            document.getElementById('analyticsToDate').value = today.toISOString().split('T')[0];
+            document.getElementById('analyticsFromDate').value = lastMonth.toISOString().split('T')[0];
+
+            loadAnalytics();
+        });
+    </script>
+
+    <%- include('../partials/footer') %>

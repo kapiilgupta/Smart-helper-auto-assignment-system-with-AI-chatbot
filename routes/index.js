@@ -144,4 +144,45 @@ router.get('/helper/history', (req, res) => {
     });
 });
 
+// Admin routes (protected)
+router.get('/admin/dashboard', (req, res) => {
+    if (!req.session.userId || req.session.role !== 'admin') {
+        return res.redirect('/admin/login');
+    }
+    res.render('admin/dashboard', {
+        title: 'Admin Dashboard',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
+router.get('/admin/helpers', (req, res) => {
+    if (!req.session.userId || req.session.role !== 'admin') {
+        return res.redirect('/admin/login');
+    }
+    res.render('admin/helpers', {
+        title: 'Manage Helpers',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
+router.get('/admin/bookings', (req, res) => {
+    if (!req.session.userId || req.session.role !== 'admin') {
+        return res.redirect('/admin/login');
+    }
+    res.render('admin/bookings', {
+        title: 'All Bookings',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
+router.get('/admin/analytics', (req, res) => {
+    if (!req.session.userId || req.session.role !== 'admin') {
+        return res.redirect('/admin/login');
+    }
+    res.render('admin/analytics', {
+        title: 'Analytics & Reports',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
 module.exports = router;
