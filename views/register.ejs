@@ -81,9 +81,8 @@
             };
 
             const messageDiv = document.getElementById('message');
-            
-            ${
-                userType === 'helper' ? `
+
+            ` + (userType === 'helper' ? `
             formData.skills = document.getElementById('skills').value.split(',').map(s => s.trim());
             formData.location = {
                 type: 'Point',
@@ -102,10 +101,10 @@
             if (lon && lat) {
                 formData.address.coordinates = [parseFloat(lon), parseFloat(lat)];
             }
-            `}
+            `) + `
 
             try {
-                const response = await fetch('/api/auth/${userType === 'helper' ? 'helper / ' : ''}register', {
+                const response = await fetch('/api/auth/` + (userType === 'helper' ? 'helper / ' : '') + `register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
