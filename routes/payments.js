@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const paymentController = require('../controllers/paymentController');
-const { protect } = require('../middleware/auth');
+const { verifyToken } = require('../middleware/authMiddleware');
 
 // All routes require authentication except webhooks
-router.post('/create-order', protect, paymentController.createOrder);
-router.post('/verify', protect, paymentController.verifyPayment);
-router.get('/methods', protect, paymentController.getPaymentMethods);
-router.post('/refund/:bookingId', protect, paymentController.processRefund);
-router.post('/wallet-pay', protect, paymentController.payWithWallet);
+router.post('/create-order', verifyToken, paymentController.createOrder);
+router.post('/verify', verifyToken, paymentController.verifyPayment);
+router.get('/methods', verifyToken, paymentController.getPaymentMethods);
+router.post('/refund/:bookingId', verifyToken, paymentController.processRefund);
+router.post('/wallet-pay', verifyToken, paymentController.payWithWallet);
 
 // Webhook routes (no authentication, verified by signature)
 router.post('/webhook/razorpay', express.raw({ type: 'application/json' }), paymentController.razorpayWebhook);

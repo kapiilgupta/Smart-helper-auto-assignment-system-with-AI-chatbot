@@ -8,7 +8,7 @@ const Booking = require('./models/Booking');
 dotenv.config();
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB Connected for seeding'))
     .catch(err => {
         console.error('MongoDB connection error:', err);
