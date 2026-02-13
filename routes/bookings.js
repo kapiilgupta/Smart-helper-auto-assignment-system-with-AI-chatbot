@@ -15,6 +15,7 @@ const { verifyToken, isUser, isHelper } = require('../middleware/authMiddleware'
 // User routes
 router.post('/', verifyToken, isUser, createBooking);
 router.get('/', verifyToken, getUserBookings);
+router.put('/:id/cancel', verifyToken, isUser, cancelBooking);
 router.delete('/:id', verifyToken, isUser, cancelBooking);
 
 // Helper routes

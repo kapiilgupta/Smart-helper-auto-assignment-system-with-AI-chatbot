@@ -37,7 +37,10 @@ app.set('views', path.join(__dirname, 'views'));
 // Routes
 app.use('/', require('./routes/index'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/services', require('./routes/services'));
 app.use('/api/bookings', require('./routes/bookings'));
+app.use('/api/helpers', require('./routes/helpers'));
 
 // Initialize Socket.IO
 const { initializeSocket } = require('./config/socket');
