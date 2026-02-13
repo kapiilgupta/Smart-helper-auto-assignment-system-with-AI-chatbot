@@ -1,0 +1,35 @@
+<%- include('layout', { body: ` <div class="container mt-5">
+    <h1 class="mb-4">Dashboard</h1>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Welcome ${user.role === 'helper' ? 'Helper' : 'User'}!</h5>
+                    <p class="card-text">You are logged in as a ${user.role}.</p>
+                    <p>User ID: ${user.id}</p>
+                    <button class="btn btn-danger" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        async function logout() {
+            try {
+                const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                alert('Error logging out');
+            }
+        }
+    </script>
+    ` }) %>
