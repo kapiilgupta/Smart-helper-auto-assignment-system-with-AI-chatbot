@@ -73,6 +73,37 @@ const bookingSchema = new mongoose.Schema({
         type: Number,
         min: 0
     },
+    paymentStatus: {
+        type: String,
+        enum: ['pending', 'paid', 'refunded', 'failed'],
+        default: 'pending',
+        index: true
+    },
+    paymentMethod: {
+        type: String,
+        enum: ['razorpay', 'stripe', 'cash', 'wallet'],
+        default: 'cash'
+    },
+    amount: {
+        type: Number,
+        min: 0
+    },
+    platformFee: {
+        type: Number,
+        min: 0,
+        default: function () {
+            const feePercentage = parseFloat(process.env.PLATFORM_FEE_PERCENTAGE) || 20;
+            return this.amount ? (this.amount * feePercentage) / 100 : 0;
+        }
+    },
+    helperEarnings: {
+        type: Number,
+        min: 0
+    },
+    transactionId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Transaction'
+    },
     notes: {
         type: String,
         trim: true
