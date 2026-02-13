@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Test - Smart Helper System</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        input,
+        select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        #events {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .event {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #007bff;
+            background: white;
+        }
+
+        .error {
+            border-left-color: #dc3545;
+        }
+
+        .success {
+            border-left-color: #28a745;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔌 Socket.IO Test Client</h1>
+
+        <div class="section">
+            <h3>Connection</h3>
+            <select id="role">
+                <option value="user">User</option>
+                <option value="helper">Helper</option>
+            </select>
+            <input type="text" id="userId" placeholder="User/Helper ID">
+            <button onclick="connect()">Connect</button>
+            <button onclick="disconnect()">Disconnect</button>
+        </div>
+
+        <div class="section">
+            <h3>Helper Events</h3>
+            <input type="text" id="helperId" placeholder="Helper ID">
+            <button onclick="helperConnect()">Helper Connect</button>
+            <button onclick="helperDisconnect()">Helper Disconnect</button>
+            <br>
+            <input type="number" id="lng" placeholder="Longitude" step="0.0001" value="72.8777">
+            <input type="number" id="lat" placeholder="Latitude" step="0.0001" value="19.0760">
+            <button onclick="updateLocation()">Update Location</button>
+        </div>
+
+        <div class="section">
+            <h3>Booking Events</h3>
+            <input type="text" id="bookingId" placeholder="Booking ID">
+            <input type="text" id="bookingHelperId" placeholder="Helper ID">
+            <button onclick="acceptBooking()">Accept Booking</button>
+            <button onclick="rejectBooking()">Reject Booking</button>
+            <br>
+            <select id="status">
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select>
+            <button onclick="updateStatus()">Update Status</button>
+        </div>
+
+        <div class="section">
+            <h3>Events Log</h3>
+            <button onclick="clearLog()">Clear Log</button>
+            <div id="events"></div>
+        </div>
+    </div>
+
+    <script>
+        let socket;
+
+        function logEvent(message, type = 'info') {
+            const eventsDiv = document.getElementById('events');
+            const eventDiv = document.createElement('div');
+            eventDiv.className = `event ${type}`;
+            eventDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            eventsDiv.insertBefore(eventDiv, eventsDiv.firstChild);
+        }
+
+        function connect() {
+            const role = document.getElementById('role').value;
+            const userId = document.getElementById('userId').value;
+
+            if (!userId) {
+                alert('Please enter User/Helper ID');
+                return;
+            }
+
+            socket = io();
+
+            socket.on('connect', () => {
+                logEvent('Connected to server', 'success');
+                socket.emit('join', { userId, role });
+            });
+
+            socket.on('disconnect', () => {
+                logEvent('Disconnected from server', 'error');
+            });
+
+            // Helper events
+            socket.on('helper:connected', (data) => {
+                logEvent(`Helper connected: ${JSON.stringify(data)}`, 'success');
+            });
+
+            socket.on('helper:location-updated', (data) => {
+                logEvent(`Location updated: ${JSON.stringify(data)}`, 'success');
+            });
+
+            // Booking events
+            socket.on('booking:new', (data) => {
+                logEvent(`New booking: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('booking:accepted', (data) => {
+                logEvent(`Booking accepted: ${JSON.stringify(data)}`, 'success');
+            });
+
+            socket.on('booking:rejected', (data) => {
+                logEvent(`Booking rejected: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('booking:status', (data) => {
+                logEvent(`Booking status: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('booking:status-updated', (data) => {
+                logEvent(`Status updated: ${JSON.stringify(data)}`, 'success');
+            });
+
+            socket.on('booking:timeout', (data) => {
+                logEvent(`Booking timeout: ${JSON.stringify(data)}`, 'error');
+            });
+
+            socket.on('helper_assigned', (data) => {
+                logEvent(`Helper assigned: ${JSON.stringify(data)}`, 'success');
+            });
+
+            socket.on('helper_reassigned', (data) => {
+                logEvent(`Helper reassigned: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('booking_accepted', (data) => {
+                logEvent(`Booking accepted (user): ${JSON.stringify(data)}`, 'success');
+            });
+
+            socket.on('booking_failed', (data) => {
+                logEvent(`Booking failed: ${JSON.stringify(data)}`, 'error');
+            });
+
+            socket.on('error', (data) => {
+                logEvent(`Error: ${JSON.stringify(data)}`, 'error');
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+        }
+
+        function helperConnect() {
+            const helperId = document.getElementById('helperId').value;
+            if (!helperId || !socket) return;
+
+            socket.emit('helper:connect', { helperId });
+            logEvent(`Emitted helper:connect for ${helperId}`);
+        }
+
+        function helperDisconnect() {
+            const helperId = document.getElementById('helperId').value;
+            if (!helperId || !socket) return;
+
+            socket.emit('helper:disconnect', { helperId });
+            logEvent(`Emitted helper:disconnect for ${helperId}`);
+        }
+
+        function updateLocation() {
+            const helperId = document.getElementById('helperId').value;
+            const lng = parseFloat(document.getElementById('lng').value);
+            const lat = parseFloat(document.getElementById('lat').value);
+
+            if (!helperId || !socket) return;
+
+            socket.emit('helper:location-update', {
+                helperId,
+                coordinates: [lng, lat]
+            });
+            logEvent(`Emitted location update: [${lng}, ${lat}]`);
+        }
+
+        function acceptBooking() {
+            const bookingId = document.getElementById('bookingId').value;
+            const helperId = document.getElementById('bookingHelperId').value;
+
+            if (!bookingId || !helperId || !socket) return;
+
+            socket.emit('booking:accept', { bookingId, helperId });
+            logEvent(`Emitted booking:accept for ${bookingId}`);
+        }
+
+        function rejectBooking() {
+            const bookingId = document.getElementById('bookingId').value;
+            const helperId = document.getElementById('bookingHelperId').value;
+
+            if (!bookingId || !helperId || !socket) return;
+
+            socket.emit('booking:reject', {
+                bookingId,
+                helperId,
+                reason: 'Testing rejection'
+            });
+            logEvent(`Emitted booking:reject for ${bookingId}`);
+        }
+
+        function updateStatus() {
+            const bookingId = document.getElementById('bookingId').value;
+            const helperId = document.getElementById('bookingHelperId').value;
+            const status = document.getElementById('status').value;
+
+            if (!bookingId || !helperId || !socket) return;
+
+            socket.emit('booking:status', { bookingId, helperId, status });
+            logEvent(`Emitted booking:status (${status}) for ${bookingId}`);
+        }
+
+        function clearLog() {
+            document.getElementById('events').innerHTML = '';
+        }
+    </script>
+</body>
+
+</html>

@@ -39,30 +39,9 @@ app.use('/', require('./routes/index'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/bookings', require('./routes/bookings'));
 
-// Socket.io connection
-io.on('connection', (socket) => {
-    console.log('New client connected:', socket.id);
-
-    // Join user/helper specific room
-    socket.on('join', (data) => {
-        const { userId, role } = data;
-        const room = `${role}_${userId}`;
-        socket.join(room);
-        console.log(`${role} ${userId} joined room: ${room}`);
-    });
-
-    // Leave room
-    socket.on('leave', (data) => {
-        const { userId, role } = data;
-        const room = `${role}_${userId}`;
-        socket.leave(room);
-        console.log(`${role} ${userId} left room: ${room}`);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('Client disconnected:', socket.id);
-    });
-});
+// Initialize Socket.IO
+const { initializeSocket } = require('./config/socket');
+initializeSocket(io);
 
 // Make io accessible to routes
 app.set('io', io);
