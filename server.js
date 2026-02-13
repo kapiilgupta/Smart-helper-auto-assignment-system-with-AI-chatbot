@@ -37,6 +37,7 @@ app.set('views', path.join(__dirname, 'views'));
 // Routes
 app.use('/', require('./routes/index'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/bookings', require('./routes/bookings'));
 
 // Socket.io connection
 io.on('connection', (socket) => {
