@@ -1,0 +1,247 @@
+<%- include('../partials/header') %>
+
+    <div class="container my-5">
+        <h2 class="mb-4"><i class="bi bi-clock-history me-2"></i>Booking History</h2>
+
+        <!-- Summary Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-check-circle fs-1 text-success mb-2"></i>
+                        <h3 class="mb-0" id="totalCompleted">0</h3>
+                        <small class="text-muted">Completed Jobs</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-currency-rupee fs-1 text-primary mb-2"></i>
+                        <h3 class="mb-0" id="totalEarnings">₹0</h3>
+                        <small class="text-muted">Total Earnings</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-star-fill fs-1 text-warning mb-2"></i>
+                        <h3 class="mb-0" id="avgRating">0.0</h3>
+                        <small class="text-muted">Average Rating</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-month fs-1 text-info mb-2"></i>
+                        <h3 class="mb-0" id="thisMonth">0</h3>
+                        <small class="text-muted">This Month</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">From Date</label>
+                        <input type="date" class="form-control" id="fromDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">To Date</label>
+                        <input type="date" class="form-control" id="toDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary w-100" id="applyFilter">
+                            <i class="bi bi-funnel me-2"></i>Apply Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking History Table -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">All Bookings</h5>
+            </div>
+            <div class="card-body">
+                <div id="historyContainer">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allBookings = [];
+
+        // Load bookings on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBookings();
+
+            document.getElementById('applyFilter').addEventListener('click', applyFilters);
+        });
+
+        // Load all bookings
+        async function loadBookings() {
+            try {
+                const response = await fetch('/api/helpers/bookings', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    allBookings = data.bookings;
+                    displayBookings(allBookings);
+                    updateSummary(allBookings);
+                } else {
+                    document.getElementById('historyContainer').innerHTML = `
+                <div class="alert alert-danger">Failed to load bookings</div>
+            `;
+                }
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                document.getElementById('historyContainer').innerHTML = `
+            <div class="alert alert-danger">Error loading bookings</div>
+        `;
+            }
+        }
+
+        // Display bookings
+        function displayBookings(bookings) {
+            const container = document.getElementById('historyContainer');
+
+            if (bookings.length === 0) {
+                container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                <p class="text-muted">No bookings found</p>
+            </div>
+        `;
+                return;
+            }
+
+            container.innerHTML = '';
+
+            bookings.forEach(booking => {
+                const statusBadge = getStatusBadge(booking.status);
+                const earnings = booking.status === 'completed' ? booking.serviceId.basePrice : 0;
+
+                const card = `
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <h6 class="mb-1">${booking.serviceId.name}</h6>
+                            <small class="text-muted">${new Date(booking.createdAt).toLocaleDateString()}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted">Customer</small>
+                            <p class="mb-0">${booking.userId.name}</p>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted">Location</small>
+                            <p class="mb-0">${booking.location.address.city}</p>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted">Earnings</small>
+                            <p class="mb-0 fw-bold text-success">₹${earnings}</p>
+                        </div>
+                        <div class="col-md-2">
+                            ${statusBadge}
+                        </div>
+                        <div class="col-md-1 text-end">
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('${booking._id}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+                container.innerHTML += card;
+            });
+        }
+
+        // Update summary
+        function updateSummary(bookings) {
+            const completed = bookings.filter(b => b.status === 'completed');
+            const totalEarnings = completed.reduce((sum, b) => sum + (b.serviceId.basePrice || 0), 0);
+
+            // This month
+            const now = new Date();
+            const thisMonth = completed.filter(b => {
+                const bookingDate = new Date(b.createdAt);
+                return bookingDate.getMonth() === now.getMonth() &&
+                    bookingDate.getFullYear() === now.getFullYear();
+            });
+
+            document.getElementById('totalCompleted').textContent = completed.length;
+            document.getElementById('totalEarnings').textContent = `₹${totalEarnings}`;
+            document.getElementById('avgRating').textContent = '4.5'; // Placeholder
+            document.getElementById('thisMonth').textContent = thisMonth.length;
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const status = document.getElementById('statusFilter').value;
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+
+            let filtered = allBookings;
+
+            // Filter by status
+            if (status) {
+                filtered = filtered.filter(b => b.status === status);
+            }
+
+            // Filter by date range
+            if (fromDate) {
+                filtered = filtered.filter(b => new Date(b.createdAt) >= new Date(fromDate));
+            }
+            if (toDate) {
+                filtered = filtered.filter(b => new Date(b.createdAt) <= new Date(toDate));
+            }
+
+            displayBookings(filtered);
+        }
+
+        // Get status badge
+        function getStatusBadge(status) {
+            const badges = {
+                'completed': '<span class="badge bg-success">Completed</span>',
+                'cancelled': '<span class="badge bg-danger">Cancelled</span>',
+                'in-progress': '<span class="badge bg-primary">In Progress</span>',
+                'accepted': '<span class="badge bg-info">Accepted</span>'
+            };
+            return badges[status] || `<span class="badge bg-secondary">${status}</span>`;
+        }
+
+        // View details
+        function viewDetails(bookingId) {
+            window.location.href = `/helper/booking/${bookingId}`;
+        }
+    </script>
+
+    <%- include('../partials/footer') %>

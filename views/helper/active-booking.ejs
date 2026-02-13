@@ -1,0 +1,317 @@
+<%- include('../partials/header') %>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <h2 class="mb-4"><i class="bi bi-briefcase-fill me-2"></i>Active Booking</h2>
+
+                <!-- Booking Status -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4 id="serviceName">Loading...</h4>
+                                <p class="text-muted mb-0" id="bookingId">Booking ID: --</p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <span class="badge bg-primary fs-6" id="statusBadge">In Progress</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Information -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-person me-2"></i>Customer Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Name:</strong> <span id="userName">--</span></p>
+                                <p><strong>Phone:</strong> <a href="#" id="userPhone">--</a></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Address:</strong> <span id="userAddress">--</span></p>
+                                <p><strong>Scheduled:</strong> <span id="scheduledTime">--</span></p>
+                            </div>
+                        </div>
+                        <div id="notesSection" style="display: none;">
+                            <hr>
+                            <p><strong>Notes:</strong></p>
+                            <div class="alert alert-info" id="bookingNotes"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Map -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-map me-2"></i>Navigation</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="map" class="map-container"></div>
+                        <div class="mt-3 text-center">
+                            <button class="btn btn-primary" id="getDirections">
+                                <i class="bi bi-compass me-2"></i>Get Directions
+                            </button>
+                            <button class="btn btn-outline-secondary" id="shareLocation">
+                                <i class="bi bi-geo-alt me-2"></i>Share My Location
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Details -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-tools me-2"></i>Service Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Service:</strong> <span id="serviceType">--</span></p>
+                                <p><strong>Duration:</strong> <span id="estimatedDuration">--</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Price:</strong> <span id="servicePrice">₹--</span></p>
+                                <p><strong>Category:</strong> <span id="serviceCategory">--</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <button class="btn btn-success w-100" id="startJobBtn">
+                                    <i class="bi bi-play-circle me-2"></i>Start Job
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-primary w-100" id="completeJobBtn" style="display: none;">
+                                    <i class="bi bi-check-circle me-2"></i>Complete Job
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-danger w-100" id="cancelJobBtn">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket;
+        let map;
+        let userMarker;
+        let helperMarker;
+        let bookingData;
+
+        const bookingId = new URLSearchParams(window.location.search).get('id');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initSocket();
+            loadBooking();
+
+            document.getElementById('startJobBtn').addEventListener('click', startJob);
+            document.getElementById('completeJobBtn').addEventListener('click', completeJob);
+            document.getElementById('cancelJobBtn').addEventListener('click', cancelJob);
+            document.getElementById('getDirections').addEventListener('click', getDirections);
+            document.getElementById('shareLocation').addEventListener('click', shareLocation);
+        });
+
+        // Initialize Socket.IO
+        function initSocket() {
+            socket = io();
+            const helperId = '<%= user?._id %>';
+            socket.emit('join', { userId: helperId, role: 'helper' });
+        }
+
+        // Load booking
+        async function loadBooking() {
+            try {
+                const response = await fetch(`/api/bookings/${bookingId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    bookingData = data.booking;
+                    displayBooking(data.booking);
+                }
+            } catch (error) {
+                console.error('Error loading booking:', error);
+            }
+        }
+
+        // Display booking
+        function displayBooking(booking) {
+            document.getElementById('serviceName').textContent = booking.serviceId.name;
+            document.getElementById('bookingId').textContent = `Booking ID: ${booking._id}`;
+            document.getElementById('statusBadge').textContent = booking.status;
+
+            document.getElementById('userName').textContent = booking.userId.name;
+            document.getElementById('userPhone').textContent = booking.userId.phone || 'N/A';
+            document.getElementById('userPhone').href = `tel:${booking.userId.phone}`;
+            document.getElementById('userAddress').textContent = `${booking.location.address.street}, ${booking.location.address.city}`;
+            document.getElementById('scheduledTime').textContent = new Date(booking.scheduledTime).toLocaleString();
+
+            document.getElementById('serviceType').textContent = booking.serviceId.name;
+            document.getElementById('estimatedDuration').textContent = `${booking.serviceId.estimatedDuration} min`;
+            document.getElementById('servicePrice').textContent = `₹${booking.serviceId.basePrice}`;
+            document.getElementById('serviceCategory').textContent = booking.serviceId.category;
+
+            if (booking.notes) {
+                document.getElementById('notesSection').style.display = 'block';
+                document.getElementById('bookingNotes').textContent = booking.notes;
+            }
+
+            // Update button visibility based on status
+            if (booking.status === 'accepted') {
+                document.getElementById('startJobBtn').style.display = 'block';
+            } else if (booking.status === 'in-progress') {
+                document.getElementById('startJobBtn').style.display = 'none';
+                document.getElementById('completeJobBtn').style.display = 'block';
+            }
+
+            // Initialize map
+            if (booking.location.coordinates) {
+                const [lng, lat] = booking.location.coordinates;
+                initMap(lat, lng);
+            }
+        }
+
+        // Initialize map
+        function initMap(lat, lng) {
+            map = L.map('map').setView([lat, lng], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            userMarker = L.marker([lat, lng]).addTo(map)
+                .bindPopup('Customer Location');
+
+            // Get helper's current location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const helperLat = position.coords.latitude;
+                    const helperLng = position.coords.longitude;
+
+                    helperMarker = L.marker([helperLat, helperLng], {
+                        icon: L.divIcon({
+                            className: 'helper-marker',
+                            html: '<div style="background: #10b981; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white;"></div>'
+                        })
+                    }).addTo(map).bindPopup('Your Location');
+
+                    // Fit bounds
+                    const group = L.featureGroup([userMarker, helperMarker]);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                });
+            }
+        }
+
+        // Start job
+        async function startJob() {
+            try {
+                const response = await fetch(`/api/bookings/${bookingId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({ status: 'in-progress' })
+                });
+
+                if (response.ok) {
+                    alert('Job started!');
+                    document.getElementById('startJobBtn').style.display = 'none';
+                    document.getElementById('completeJobBtn').style.display = 'block';
+                    document.getElementById('statusBadge').textContent = 'In Progress';
+                }
+            } catch (error) {
+                console.error('Error starting job:', error);
+            }
+        }
+
+        // Complete job
+        async function completeJob() {
+            if (!confirm('Mark this job as completed?')) return;
+
+            try {
+                const response = await fetch(`/api/bookings/${bookingId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({ status: 'completed' })
+                });
+
+                if (response.ok) {
+                    alert('Job completed!');
+                    window.location.href = '/helper/dashboard';
+                }
+            } catch (error) {
+                console.error('Error completing job:', error);
+            }
+        }
+
+        // Cancel job
+        async function cancelJob() {
+            if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+            try {
+                const response = await fetch(`/api/bookings/${bookingId}/cancel`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Booking cancelled');
+                    window.location.href = '/helper/dashboard';
+                }
+            } catch (error) {
+                console.error('Error cancelling booking:', error);
+            }
+        }
+
+        // Get directions
+        function getDirections() {
+            if (bookingData && bookingData.location.coordinates) {
+                const [lng, lat] = bookingData.location.coordinates;
+                const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+                window.open(url, '_blank');
+            }
+        }
+
+        // Share location
+        function shareLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const { latitude, longitude } = position.coords;
+                    socket.emit('helper:location-update', {
+                        helperId: '<%= user?._id %>',
+                        coordinates: [longitude, latitude]
+                    });
+                    alert('Location shared with customer');
+                });
+            }
+        }
+    </script>
+
+    <%- include('../partials/footer') %>

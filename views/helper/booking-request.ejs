@@ -1,0 +1,231 @@
+<%- include('../partials/header') %>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-warning text-white">
+                        <h4 class="mb-0"><i class="bi bi-bell-fill me-2"></i>New Booking Request</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Countdown Timer -->
+                        <div class="text-center mb-4">
+                            <div class="position-relative d-inline-block">
+                                <div class="circular-progress mb-3"></div>
+                                <h1 class="display-1 fw-bold text-warning" id="countdown">30</h1>
+                            </div>
+                            <p class="text-muted">seconds to respond</p>
+                        </div>
+
+                        <!-- Service Details -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Service Details</h5>
+                                <div class="mb-2">
+                                    <i class="bi bi-tools me-2 text-primary"></i>
+                                    <strong id="serviceName">Loading...</strong>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-clock me-2 text-primary"></i>
+                                    <span id="estimatedDuration">-- min</span>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-currency-rupee me-2 text-primary"></i>
+                                    <span id="servicePrice">₹--</span>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-calendar me-2 text-primary"></i>
+                                    <span id="scheduledTime">--</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Customer Details</h5>
+                                <div class="mb-2">
+                                    <i class="bi bi-person me-2 text-success"></i>
+                                    <span id="userName">Loading...</span>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-telephone me-2 text-success"></i>
+                                    <span id="userPhone">--</span>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-geo-alt me-2 text-success"></i>
+                                    <span id="userAddress">--</span>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-pin-map me-2 text-success"></i>
+                                    <span id="distance">-- km away</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-4" id="notesSection" style="display: none;">
+                            <h6>Additional Notes:</h6>
+                            <div class="alert alert-info" id="bookingNotes"></div>
+                        </div>
+
+                        <!-- Map -->
+                        <div class="mb-4">
+                            <div id="map" class="map-container" style="height: 300px;"></div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <button class="btn btn-success btn-lg w-100" id="acceptBtn">
+                                    <i class="bi bi-check-circle me-2"></i>Accept Booking
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-danger btn-lg w-100" id="rejectBtn">
+                                    <i class="bi bi-x-circle me-2"></i>Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let countdownTimer;
+        let map;
+        const bookingId = new URLSearchParams(window.location.search).get('id');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBookingRequest();
+            startCountdown(30);
+
+            document.getElementById('acceptBtn').addEventListener('click', acceptBooking);
+            document.getElementById('rejectBtn').addEventListener('click', rejectBooking);
+        });
+
+        // Load booking request
+        async function loadBookingRequest() {
+            try {
+                const response = await fetch(`/api/bookings/${bookingId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayBookingDetails(data.booking);
+                }
+            } catch (error) {
+                console.error('Error loading booking:', error);
+            }
+        }
+
+        // Display booking details
+        function displayBookingDetails(booking) {
+            document.getElementById('serviceName').textContent = booking.serviceId.name;
+            document.getElementById('estimatedDuration').textContent = `${booking.serviceId.estimatedDuration} min`;
+            document.getElementById('servicePrice').textContent = `₹${booking.serviceId.basePrice}`;
+            document.getElementById('scheduledTime').textContent = new Date(booking.scheduledTime).toLocaleString();
+
+            document.getElementById('userName').textContent = booking.userId.name;
+            document.getElementById('userPhone').textContent = booking.userId.phone || 'N/A';
+            document.getElementById('userAddress').textContent = `${booking.location.address.street}, ${booking.location.address.city}`;
+
+            if (booking.notes) {
+                document.getElementById('notesSection').style.display = 'block';
+                document.getElementById('bookingNotes').textContent = booking.notes;
+            }
+
+            // Initialize map
+            if (booking.location.coordinates) {
+                const [lng, lat] = booking.location.coordinates;
+                initMap(lat, lng);
+            }
+        }
+
+        // Initialize map
+        function initMap(lat, lng) {
+            map = L.map('map').setView([lat, lng], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            L.marker([lat, lng]).addTo(map)
+                .bindPopup('Customer Location')
+                .openPopup();
+        }
+
+        // Start countdown
+        function startCountdown(seconds) {
+            let timeLeft = seconds;
+            const countdownEl = document.getElementById('countdown');
+
+            countdownTimer = setInterval(() => {
+                timeLeft--;
+                countdownEl.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    autoReject();
+                }
+            }, 1000);
+        }
+
+        // Accept booking
+        async function acceptBooking() {
+            try {
+                const response = await fetch(`/api/helpers/bookings/${bookingId}/accept`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                });
+
+                if (response.ok) {
+                    clearInterval(countdownTimer);
+                    alert('Booking accepted!');
+                    window.location.href = '/helper/dashboard';
+                }
+            } catch (error) {
+                console.error('Error accepting booking:', error);
+                alert('Failed to accept booking');
+            }
+        }
+
+        // Reject booking
+        async function rejectBooking() {
+            const reason = prompt('Reason for rejection (optional):');
+
+            try {
+                const response = await fetch(`/api/helpers/bookings/${bookingId}/reject`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({ reason: reason || 'Helper rejected' })
+                });
+
+                if (response.ok) {
+                    clearInterval(countdownTimer);
+                    alert('Booking rejected');
+                    window.location.href = '/helper/dashboard';
+                }
+            } catch (error) {
+                console.error('Error rejecting booking:', error);
+                alert('Failed to reject booking');
+            }
+        }
+
+        // Auto reject on timeout
+        function autoReject() {
+            alert('Time expired. Booking auto-rejected.');
+            window.location.href = '/helper/dashboard';
+        }
+    </script>
+
+    <%- include('../partials/footer') %>

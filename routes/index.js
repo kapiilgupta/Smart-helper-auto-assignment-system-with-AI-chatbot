@@ -103,4 +103,45 @@ router.get('/user/profile', (req, res) => {
     });
 });
 
+// Helper routes (protected)
+router.get('/helper/dashboard', (req, res) => {
+    if (!req.session.userId || req.session.role !== 'helper') {
+        return res.redirect('/helper/login');
+    }
+    res.render('helper/dashboard', {
+        title: 'Helper Dashboard',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
+router.get('/helper/booking-request', (req, res) => {
+    if (!req.session.userId || req.session.role !== 'helper') {
+        return res.redirect('/helper/login');
+    }
+    res.render('helper/booking-request', {
+        title: 'Booking Request',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
+router.get('/helper/booking/:id', (req, res) => {
+    if (!req.session.userId || req.session.role !== 'helper') {
+        return res.redirect('/helper/login');
+    }
+    res.render('helper/active-booking', {
+        title: 'Active Booking',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
+router.get('/helper/history', (req, res) => {
+    if (!req.session.userId || req.session.role !== 'helper') {
+        return res.redirect('/helper/login');
+    }
+    res.render('helper/history', {
+        title: 'Booking History',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
 module.exports = router;
