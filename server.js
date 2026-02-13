@@ -127,6 +127,7 @@ app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/helpers', require('./routes/helpers'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/wallet', require('./routes/wallet'));
+app.use('/api/reviews', require('./routes/reviews'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {

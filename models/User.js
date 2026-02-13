@@ -38,6 +38,31 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Booking'
     }],
+    rating: {
+        average: {
+            type: Number,
+            default: 0,
+            min: 0,
+            max: 5
+        },
+        total: {
+            type: Number,
+            default: 0
+        },
+        breakdown: {
+            5: { type: Number, default: 0 },
+            4: { type: Number, default: 0 },
+            3: { type: Number, default: 0 },
+            2: { type: Number, default: 0 },
+            1: { type: Number, default: 0 }
+        },
+        categories: {
+            professionalism: { type: Number, default: 0 },
+            quality: { type: Number, default: 0 },
+            timeliness: { type: Number, default: 0 },
+            communication: { type: Number, default: 0 }
+        }
+    },
     createdAt: {
         type: Date,
         default: Date.now
