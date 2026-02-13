@@ -1,5 +1,653 @@
+/* ===================================
+   CSS Variables for Theming
+   =================================== */
+:root {
+    --primary-color: #4f46e5;
+    --primary-dark: #4338ca;
+    --primary-light: #6366f1;
+    --secondary-color: #06b6d4;
+    --secondary-dark: #0891b2;
+    --success-color: #10b981;
+    --success-dark: #059669;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --danger-dark: #dc2626;
+    --info-color: #3b82f6;
+
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-tertiary: #f3f4f6;
+
+    --border-color: #e5e7eb;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+
+    --transition-fast: 150ms ease-in-out;
+    --transition-base: 200ms ease-in-out;
+    --transition-slow: 300ms ease-in-out;
+}
+
+/* ===================================
+   Global Styles
+   =================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    line-height: 1.6;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+/* ===================================
+   Gradient Backgrounds
+   =================================== */
+.gradient-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.gradient-success {
+    background: linear-gradient(135deg, var(--success-color), var(--secondary-color));
+}
+
+.gradient-overlay {
+    position: relative;
+    overflow: hidden;
+}
+
+.gradient-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.9), rgba(6, 182, 212, 0.9));
+    z-index: 1;
+}
+
+.gradient-overlay>* {
+    position: relative;
+    z-index: 2;
+}
+
+/* ===================================
+   Service Cards
+   =================================== */
+.service-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+    border: 1px solid var(--border-color);
+    height: 100%;
+}
+
+.service-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary-color);
+}
+
+.service-card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+    transition: transform var(--transition-base);
+}
+
+.service-card:hover .service-card-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.service-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.service-card-description {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.service-card-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* ===================================
+   Status Badges
+   =================================== */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all var(--transition-base);
+}
+
+.status-searching {
+    background: linear-gradient(135deg, var(--warning-color), #fbbf24);
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.status-assigned {
+    background: linear-gradient(135deg, var(--info-color), #60a5fa);
+    color: white;
+}
+
+.status-in-progress {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    color: white;
+    animation: shimmer 2s infinite;
+}
+
+.status-completed {
+    background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+    color: white;
+}
+
+.status-cancelled {
+    background: linear-gradient(135deg, var(--danger-color), var(--danger-dark));
+    color: white;
+}
+
+/* ===================================
+   Progress Indicators
+   =================================== */
+.progress-container {
+    position: relative;
+    width: 100%;
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: var(--radius-lg);
+    transition: width var(--transition-slow);
+}
+
+.progress-bar-animated {
+    animation: progress-animation 1.5s infinite;
+}
+
+@keyframes progress-animation {
+    0% {
+        width: 0%;
+    }
+
+    50% {
+        width: 70%;
+    }
+
+    100% {
+        width: 100%;
+    }
+}
+
+/* Circular Progress */
+.circular-progress {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 6px solid var(--bg-tertiary);
+    border-top-color: var(--primary-color);
+    animation: spin 1s linear infinite;
+}
+
+/* ===================================
+   Loading Animations
+   =================================== */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% center;
+    }
+
+    100% {
+        background-position: 200% center;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--bg-tertiary);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.loading-dots {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.loading-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+.loading-dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.loading-dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+    }
+
+    40% {
+        transform: scale(1);
+    }
+}
+
+/* ===================================
+   Helper Card
+   =================================== */
+.helper-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    border: 2px solid var(--border-color);
+    transition: all var(--transition-base);
+    animation: fadeIn 0.5s ease-out;
+}
+
+.helper-card:hover {
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary-color);
+}
+
+.helper-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-md);
+}
+
+.helper-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.helper-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--warning-color);
+    font-size: 1rem;
+}
+
+.helper-rating .star {
+    font-size: 1.25rem;
+}
+
+.helper-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.helper-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
+
+/* ===================================
+   Map Container
+   =================================== */
+.map-container {
+    width: 100%;
+    height: 400px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    border: 2px solid var(--border-color);
+    background: var(--bg-tertiary);
+    position: relative;
+}
+
+.map-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: var(--text-muted);
+}
+
+.map-marker {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: var(--danger-color);
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    box-shadow: var(--shadow-md);
+    animation: bounce-marker 2s infinite;
+}
+
+@keyframes bounce-marker {
+
+    0%,
+    100% {
+        transform: rotate(-45deg) translateY(0);
+    }
+
+    50% {
+        transform: rotate(-45deg) translateY(-10px);
+    }
+}
+
+/* ===================================
+   Booking Status Page
+   =================================== */
+.booking-status-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.searching-animation {
+    text-align: center;
+    padding: 3rem;
+}
+
+.searching-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 2rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+}
+
+.searching-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.searching-subtext {
+    color: var(--text-secondary);
+}
+
+.eta-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--info-color), #60a5fa);
+    color: white;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
+    animation: slideIn 0.5s ease-out;
+}
+
+/* ===================================
+   Responsive Design
+   =================================== */
+@media (max-width: 768px) {
+    .service-card {
+        margin-bottom: 1rem;
+    }
+
+    .helper-card {
+        padding: 1.5rem;
+    }
+
+    .helper-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+
+    .helper-name {
+        font-size: 1.25rem;
+    }
+
+    .map-container {
+        height: 300px;
+    }
+
+    .searching-icon {
+        width: 80px;
+        height: 80px;
+    }
+
+    .searching-text {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+    }
+
+    .service-card-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+
+    .helper-card {
+        padding: 1rem;
+    }
+}
+
+/* ===================================
+   Utility Classes
+   =================================== */
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.slide-in {
+    animation: slideIn 0.5s ease-out;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.shadow-hover {
+    transition: box-shadow var(--transition-base);
+}
+
+.shadow-hover:hover {
+    box-shadow: var(--shadow-xl);
+}
+
+.btn-gradient {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(135deg, var(--primary-dark), var(--secondary-dark));
+}
+
+.card-elevated {
+    box-shadow: var(--shadow-lg);
+    border: none;
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-base);
+}
+
+.card-elevated:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+/* ===================================
+   Star Rating Display
+   =================================== */
+.stars {
+    display: inline-flex;
+    gap: 0.25rem;
+}
+
+.star-filled {
+    color: var(--warning-color);
+}
+
+.star-empty {
+    color: var(--border-color);
+}
+
+.rating-number {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-left: 0.5rem;
+}
+
+/* ===================================
+   Alert Animations
+   =================================== */
+.alert-animated {
+    animation: slideIn 0.5s ease-out;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+    border-left: 4px solid var(--success-color);
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+    border-left: 4px solid var(--warning-color);
+}
+
+.alert-info {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+    border-left: 4px solid var(--info-color);
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+    border-left: 4px solid var(--danger-color);
 }
