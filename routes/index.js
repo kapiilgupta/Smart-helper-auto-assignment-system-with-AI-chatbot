@@ -52,4 +52,55 @@ router.get('/dashboard', (req, res) => {
     });
 });
 
+// User routes (protected)
+router.get('/user/home', (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect('/login');
+    }
+    res.render('user/home', {
+        title: 'Home - Smart Helper',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
+router.get('/user/booking', (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect('/login');
+    }
+    res.render('user/booking', {
+        title: 'Book a Service',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
+router.get('/user/booking-status', (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect('/login');
+    }
+    res.render('user/booking-status', {
+        title: 'Booking Status',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
+router.get('/user/dashboard', (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect('/login');
+    }
+    res.render('user/dashboard', {
+        title: 'My Dashboard',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
+router.get('/user/profile', (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect('/login');
+    }
+    res.render('user/profile', {
+        title: 'My Profile',
+        user: { _id: req.session.userId, role: req.session.role }
+    });
+});
+
 module.exports = router;

@@ -1,0 +1,163 @@
+<%- include('../partials/header') %>
+
+    <div class="container my-5">
+        <h2 class="mb-4"><i class="bi bi-grid me-2"></i>My Dashboard</h2>
+
+        <!-- Quick Stats -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-check fs-1 text-primary mb-2"></i>
+                        <h3 class="mb-0" id="totalBookings">0</h3>
+                        <small class="text-muted">Total Bookings</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-clock-history fs-1 text-warning mb-2"></i>
+                        <h3 class="mb-0" id="pendingBookings">0</h3>
+                        <small class="text-muted">Pending</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-check-circle fs-1 text-success mb-2"></i>
+                        <h3 class="mb-0" id="completedBookings">0</h3>
+                        <small class="text-muted">Completed</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-x-circle fs-1 text-danger mb-2"></i>
+                        <h3 class="mb-0" id="cancelledBookings">0</h3>
+                        <small class="text-muted">Cancelled</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking History -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Booking History</h5>
+            </div>
+            <div class="card-body">
+                <div id="bookingsContainer">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadBookings() {
+            try {
+                const response = await fetch('/api/users/bookings', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayBookings(data.bookings);
+                    updateStats(data.bookings);
+                } else {
+                    document.getElementById('bookingsContainer').innerHTML = `
+                <div class="alert alert-danger">Failed to load bookings</div>
+            `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('bookingsContainer').innerHTML = `
+            <div class="alert alert-danger">Error loading bookings</div>
+        `;
+            }
+        }
+
+        function displayBookings(bookings) {
+            const container = document.getElementById('bookingsContainer');
+
+            if (bookings.length === 0) {
+                container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                <p class="text-muted">No bookings yet</p>
+                <a href="/user/booking" class="btn btn-primary">Book a Service</a>
+            </div>
+        `;
+                return;
+            }
+
+            container.innerHTML = '';
+
+            bookings.forEach(booking => {
+                const statusBadge = getStatusBadge(booking.status);
+                const bookingCard = `
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <h6 class="mb-1">${booking.serviceId.name}</h6>
+                            <small class="text-muted">${new Date(booking.createdAt).toLocaleDateString()}</small>
+                        </div>
+                        <div class="col-md-3">
+                            <small class="text-muted">Scheduled</small>
+                            <p class="mb-0">${new Date(booking.scheduledTime).toLocaleString()}</p>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted">Helper</small>
+                            <p class="mb-0">${booking.helperId ? booking.helperId.name : 'Not assigned'}</p>
+                        </div>
+                        <div class="col-md-2">
+                            ${statusBadge}
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <a href="/user/booking-status?id=${booking._id}" class="btn btn-sm btn-outline-primary">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+                container.innerHTML += bookingCard;
+            });
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'pending': '<span class="badge bg-warning">Pending</span>',
+                'assigned': '<span class="badge bg-info">Assigned</span>',
+                'accepted': '<span class="badge bg-primary">Accepted</span>',
+                'in-progress': '<span class="badge bg-primary">In Progress</span>',
+                'completed': '<span class="badge bg-success">Completed</span>',
+                'cancelled': '<span class="badge bg-danger">Cancelled</span>',
+                'no_helper_available': '<span class="badge bg-secondary">No Helper</span>'
+            };
+            return badges[status] || '<span class="badge bg-secondary">' + status + '</span>';
+        }
+
+        function updateStats(bookings) {
+            document.getElementById('totalBookings').textContent = bookings.length;
+            document.getElementById('pendingBookings').textContent = bookings.filter(b => b.status === 'pending' || b.status === 'assigned').length;
+            document.getElementById('completedBookings').textContent = bookings.filter(b => b.status === 'completed').length;
+            document.getElementById('cancelledBookings').textContent = bookings.filter(b => b.status === 'cancelled').length;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadBookings);
+    </script>
+
+    <%- include('../partials/footer') %>

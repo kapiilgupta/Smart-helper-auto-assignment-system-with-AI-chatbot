@@ -1,0 +1,202 @@
+<%- include('../partials/header') %>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h2 class="card-title mb-4"><i class="bi bi-calendar-check me-2"></i>Book a Service</h2>
+
+                        <form id="bookingForm">
+                            <!-- Service Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Select Service</label>
+                                <select class="form-select" id="serviceId" required>
+                                    <option value="">Choose a service...</option>
+                                </select>
+                                <div id="serviceDetails" class="mt-2"></div>
+                            </div>
+
+                            <!-- Date and Time -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Date</label>
+                                    <input type="date" class="form-control" id="bookingDate" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Time</label>
+                                    <input type="time" class="form-control" id="bookingTime" required>
+                                </div>
+                            </div>
+
+                            <!-- Address -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Service Address</label>
+                                <input type="text" class="form-control mb-2" id="street" placeholder="Street Address"
+                                    required>
+                                <input type="text" class="form-control mb-2" id="city" placeholder="City" required>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <input type="number" step="0.0001" class="form-control" id="longitude"
+                                            placeholder="Longitude" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="number" step="0.0001" class="form-control" id="latitude"
+                                            placeholder="Latitude" required>
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    <a href="#" onclick="getCurrentLocation(); return false;">Use my current
+                                        location</a>
+                                </small>
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Additional Notes (Optional)</label>
+                                <textarea class="form-control" id="notes" rows="3"
+                                    placeholder="Any special instructions..."></textarea>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
+                                <i class="bi bi-check-circle me-2"></i>Confirm Booking
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load services
+        async function loadServices() {
+            try {
+                const response = await fetch('/api/services');
+                const data = await response.json();
+
+                const select = document.getElementById('serviceId');
+                data.services.forEach(service => {
+                    const option = document.createElement('option');
+                    option.value = service._id;
+                    option.textContent = `${service.name} - ₹${service.basePrice}`;
+                    option.dataset.service = JSON.stringify(service);
+                    select.appendChild(option);
+                });
+
+                // Pre-select if service ID in URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const serviceId = urlParams.get('service');
+                if (serviceId) {
+                    select.value = serviceId;
+                    showServiceDetails();
+                }
+            } catch (error) {
+                console.error('Error loading services:', error);
+            }
+        }
+
+        // Show service details
+        function showServiceDetails() {
+            const select = document.getElementById('serviceId');
+            const selectedOption = select.options[select.selectedIndex];
+            const detailsDiv = document.getElementById('serviceDetails');
+
+            if (selectedOption.dataset.service) {
+                const service = JSON.parse(selectedOption.dataset.service);
+                detailsDiv.innerHTML = `
+            <div class="alert alert-info">
+                <strong>${service.name}</strong><br>
+                ${service.description}<br>
+                <small>Estimated Duration: ${service.estimatedDuration} minutes | Price: ₹${service.basePrice}</small>
+            </div>
+        `;
+            } else {
+                detailsDiv.innerHTML = '';
+            }
+        }
+
+        document.getElementById('serviceId').addEventListener('change', showServiceDetails);
+
+        // Get current location
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        document.getElementById('longitude').value = position.coords.longitude.toFixed(4);
+                        document.getElementById('latitude').value = position.coords.latitude.toFixed(4);
+                    },
+                    error => alert('Unable to get location: ' + error.message)
+                );
+            } else {
+                alert('Geolocation is not supported by your browser');
+            }
+        }
+
+        // Set minimum date to today
+        document.getElementById('bookingDate').min = new Date().toISOString().split('T')[0];
+
+        // Handle form submission
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating booking...';
+
+            try {
+                const date = document.getElementById('bookingDate').value;
+                const time = document.getElementById('bookingTime').value;
+                const scheduledTime = new Date(`${date}T${time}`);
+
+                const bookingData = {
+                    serviceId: document.getElementById('serviceId').value,
+                    scheduledTime: scheduledTime.toISOString(),
+                    location: {
+                        type: 'Point',
+                        coordinates: [
+                            parseFloat(document.getElementById('longitude').value),
+                            parseFloat(document.getElementById('latitude').value)
+                        ],
+                        address: {
+                            street: document.getElementById('street').value,
+                            city: document.getElementById('city').value
+                        }
+                    },
+                    notes: document.getElementById('notes').value
+                };
+
+                const response = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Redirect to booking status page
+                    window.location.href = `/user/booking-status?id=${data.booking._id}`;
+                } else {
+                    alert('Error: ' + data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Confirm Booking';
+                }
+            } catch (error) {
+                console.error('Booking error:', error);
+                alert('Failed to create booking. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Confirm Booking';
+            }
+        });
+
+        // Load services on page load
+        document.addEventListener('DOMContentLoaded', loadServices);
+    </script>
+
+    <%- include('../partials/footer') %>

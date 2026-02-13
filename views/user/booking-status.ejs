@@ -1,0 +1,296 @@
+<%- include('../partials/header') %>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Booking Status Card -->
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="card-title mb-4">Booking Status</h3>
+
+                        <!-- Status Display -->
+                        <div id="statusContainer" class="text-center py-5">
+                            <div class="spinner-border text-primary mb-3" role="status"
+                                style="width: 3rem; height: 3rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <h5>Loading booking details...</h5>
+                        </div>
+
+                        <!-- Searching Animation -->
+                        <div id="searchingAnimation" class="text-center py-5" style="display: none;">
+                            <div class="mb-4">
+                                <div class="spinner-grow text-primary" role="status" style="width: 3rem; height: 3rem;">
+                                    <span class="visually-hidden">Searching...</span>
+                                </div>
+                            </div>
+                            <h4 class="mb-2">Finding the best helper for you...</h4>
+                            <p class="text-muted">This usually takes less than 30 seconds</p>
+                            <div class="progress mt-3" style="height: 8px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                    style="width: 100%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Helper Assigned -->
+                        <div id="helperAssigned" style="display: none;">
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle-fill me-2"></i>Helper assigned successfully!
+                            </div>
+
+                            <div class="row align-items-center mb-4">
+                                <div class="col-auto">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                                        style="width: 80px; height: 80px;">
+                                        <i class="bi bi-person-fill fs-1 text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <h4 class="mb-1" id="helperName">-</h4>
+                                    <div class="mb-2">
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        <span id="helperRating">-</span>
+                                        <span class="text-muted ms-2">|</span>
+                                        <span class="text-muted ms-2" id="helperSkills">-</span>
+                                    </div>
+                                    <p class="text-muted mb-0">
+                                        <i class="bi bi-telephone me-1"></i>
+                                        <span id="helperPhone">-</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <small class="text-muted">Distance</small>
+                                            <h5 class="mb-0" id="helperDistance">-</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <small class="text-muted">Status</small>
+                                            <h5 class="mb-0" id="bookingStatus">-</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Helper Approaching -->
+                            <div id="helperApproaching" class="alert alert-info" style="display: none;">
+                                <i class="bi bi-geo-alt-fill me-2"></i>
+                                <strong>Helper is on the way!</strong>
+                                <p class="mb-0 mt-2">Estimated arrival: <span id="eta">-</span></p>
+                            </div>
+                        </div>
+
+                        <!-- No Helper Available -->
+                        <div id="noHelper" style="display: none;">
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                No helper available at the moment. Please try again later.
+                            </div>
+                        </div>
+
+                        <!-- Booking Details -->
+                        <div id="bookingDetails" style="display: none;">
+                            <hr>
+                            <h5 class="mb-3">Booking Details</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <small class="text-muted">Service</small>
+                                    <p class="mb-0 fw-bold" id="serviceName">-</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <small class="text-muted">Scheduled Time</small>
+                                    <p class="mb-0" id="scheduledTime">-</p>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <small class="text-muted">Address</small>
+                                    <p class="mb-0" id="address">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div id="actions" class="mt-4" style="display: none;">
+                            <button class="btn btn-outline-danger w-100" onclick="cancelBooking()">
+                                <i class="bi bi-x-circle me-2"></i>Cancel Booking
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let bookingId;
+        let socket;
+
+        // Get booking ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        bookingId = urlParams.get('id');
+
+        if (!bookingId) {
+            window.location.href = '/user/dashboard';
+        }
+
+        // Initialize Socket.IO
+        socket = io();
+        socket.emit('join', { userId: '<%= user?._id %>', role: 'user' });
+
+        // Socket.IO event listeners
+        socket.on('helper_assigned', (data) => {
+            if (data.bookingId === bookingId) {
+                updateHelperInfo(data.helper);
+            }
+        });
+
+        socket.on('helper_reassigned', (data) => {
+            if (data.bookingId === bookingId) {
+                updateHelperInfo(data.helper);
+            }
+        });
+
+        socket.on('booking:status', (data) => {
+            if (data.bookingId === bookingId) {
+                updateBookingStatus(data.status, data.booking);
+            }
+        });
+
+        socket.on('booking_accepted', (data) => {
+            if (data.bookingId === bookingId) {
+                document.getElementById('bookingStatus').textContent = 'Accepted';
+                document.getElementById('helperApproaching').style.display = 'block';
+            }
+        });
+
+        socket.on('booking_failed', (data) => {
+            if (data.bookingId === bookingId) {
+                showNoHelper();
+            }
+        });
+
+        // Load booking details
+        async function loadBooking() {
+            try {
+                const response = await fetch(`/api/bookings/${bookingId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayBooking(data.booking);
+                } else {
+                    alert('Error loading booking: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load booking details');
+            }
+        }
+
+        function displayBooking(booking) {
+            document.getElementById('statusContainer').style.display = 'none';
+            document.getElementById('bookingDetails').style.display = 'block';
+
+            // Show booking details
+            document.getElementById('serviceName').textContent = booking.serviceId.name;
+            document.getElementById('scheduledTime').textContent = new Date(booking.scheduledTime).toLocaleString();
+            document.getElementById('address').textContent = `${booking.location.address.street}, ${booking.location.address.city}`;
+
+            // Show status based on booking state
+            if (booking.status === 'pending') {
+                document.getElementById('searchingAnimation').style.display = 'block';
+            } else if (booking.status === 'assigned' || booking.status === 'accepted' || booking.status === 'in-progress') {
+                if (booking.helperId) {
+                    updateHelperInfo({
+                        id: booking.helperId._id,
+                        name: booking.helperId.name,
+                        phone: booking.helperId.phone,
+                        rating: booking.helperId.rating,
+                        skills: booking.helperId.skills,
+                        distance: 0
+                    });
+                }
+                if (booking.status === 'accepted' || booking.status === 'in-progress') {
+                    document.getElementById('helperApproaching').style.display = 'block';
+                }
+                document.getElementById('actions').style.display = 'block';
+            } else if (booking.status === 'no_helper_available') {
+                showNoHelper();
+            } else if (booking.status === 'completed') {
+                document.getElementById('helperAssigned').style.display = 'block';
+                document.getElementById('bookingStatus').textContent = 'Completed';
+                document.getElementById('bookingStatus').classList.add('text-success');
+            }
+        }
+
+        function updateHelperInfo(helper) {
+            document.getElementById('searchingAnimation').style.display = 'none';
+            document.getElementById('helperAssigned').style.display = 'block';
+            document.getElementById('actions').style.display = 'block';
+
+            document.getElementById('helperName').textContent = helper.name;
+            document.getElementById('helperRating').textContent = helper.rating.toFixed(1);
+            document.getElementById('helperSkills').textContent = helper.skills.join(', ');
+            document.getElementById('helperPhone').textContent = helper.phone;
+            document.getElementById('helperDistance').textContent = `${helper.distance.toFixed(1)} km`;
+            document.getElementById('bookingStatus').textContent = 'Assigned';
+        }
+
+        function updateBookingStatus(status, booking) {
+            document.getElementById('bookingStatus').textContent = status.charAt(0).toUpperCase() + status.slice(1);
+
+            if (status === 'in-progress') {
+                document.getElementById('helperApproaching').style.display = 'block';
+                document.getElementById('eta').textContent = 'Helper is working on your service';
+            } else if (status === 'completed') {
+                document.getElementById('bookingStatus').classList.add('text-success');
+                document.getElementById('helperApproaching').style.display = 'none';
+                document.getElementById('actions').style.display = 'none';
+            }
+        }
+
+        function showNoHelper() {
+            document.getElementById('searchingAnimation').style.display = 'none';
+            document.getElementById('helperAssigned').style.display = 'none';
+            document.getElementById('noHelper').style.display = 'block';
+        }
+
+        async function cancelBooking() {
+            if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+            try {
+                const response = await fetch(`/api/bookings/${bookingId}/cancel`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Booking cancelled successfully');
+                    window.location.href = '/user/dashboard';
+                } else {
+                    const data = await response.json();
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to cancel booking');
+            }
+        }
+
+        // Load booking on page load
+        document.addEventListener('DOMContentLoaded', loadBooking);
+    </script>
+
+    <%- include('../partials/footer') %>
