@@ -1,0 +1,31 @@
+{
+  "name": "web-a-thon-2.o",
+  "version": "1.0.0",
+  "description": "Smart Helper Auto-Assignment System is a location-based, on-demand service platform designed to solve the latency issues in traditional booking systems. The primary objective of this project is to fulfill a \"15-minute service promise\" by automating the connection between users and household service professionals (helpers) in real-time.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kapiilgupta/Smart-helper-auto-assignment-system-with-AI-chatbot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kapiilgupta/Smart-helper-auto-assignment-system-with-AI-chatbot/issues"
+  },
+  "homepage": "https://github.com/kapiilgupta/Smart-helper-auto-assignment-system-with-AI-chatbot#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.3.1",
+    "ejs": "^4.0.1",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.2.1",
+    "nodemon": "^3.1.11",
+    "socket.io": "^4.8.3"
+  }
+}
