@@ -15,7 +15,7 @@ const {
  * @route POST /api/bookings
  * @access Private (User only)
  */
-const createBooking = async (req, res) => {
+const createBooking = async (req, res, next) => {
     try {
         const { serviceId, scheduledTime, location, notes } = req.body;
         const userId = req.user.id;
@@ -90,7 +90,7 @@ const createBooking = async (req, res) => {
  * @route GET /api/bookings
  * @access Private
  */
-const getUserBookings = async (req, res) => {
+const getUserBookings = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const bookings = await Booking.find({ userId })
@@ -99,8 +99,7 @@ const getUserBookings = async (req, res) => {
             .sort({ createdAt: -1 });
 
         res.json({ bookings });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -109,7 +108,7 @@ const getUserBookings = async (req, res) => {
  * @route GET /api/bookings/helper
  * @access Private (Helper only)
  */
-const getHelperBookings = async (req, res) => {
+const getHelperBookings = async (req, res, next) => {
     try {
         const helperId = req.user.id;
         const bookings = await Booking.find({ helperId })
@@ -118,8 +117,7 @@ const getHelperBookings = async (req, res) => {
             .sort({ createdAt: -1 });
 
         res.json({ bookings });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -128,7 +126,7 @@ const getHelperBookings = async (req, res) => {
  * @route GET /api/bookings/:id
  * @access Private
  */
-const getBookingById = async (req, res) => {
+const getBookingById = async (req, res, next) => {
     try {
         const booking = await Booking.findById(req.params.id)
             .populate('serviceId')
@@ -146,8 +144,7 @@ const getBookingById = async (req, res) => {
         }
 
         res.json({ booking });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -156,7 +153,7 @@ const getBookingById = async (req, res) => {
  * @route PUT /api/bookings/:id/accept
  * @access Private (Helper only)
  */
-const acceptBooking = async (req, res) => {
+const acceptBooking = async (req, res, next) => {
     try {
         const booking = await Booking.findById(req.params.id).populate('userId', '-password');
 
@@ -183,8 +180,7 @@ const acceptBooking = async (req, res) => {
         }, io);
 
         res.json({ message: 'Booking accepted', booking });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -193,7 +189,7 @@ const acceptBooking = async (req, res) => {
  * @route PUT /api/bookings/:id/reject
  * @access Private (Helper only)
  */
-const rejectBooking = async (req, res) => {
+const rejectBooking = async (req, res, next) => {
     try {
         const { reason } = req.body;
         const booking = await Booking.findById(req.params.id);
@@ -233,8 +229,7 @@ const rejectBooking = async (req, res) => {
             });
         }
 
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -243,7 +238,7 @@ const rejectBooking = async (req, res) => {
  * @route PUT /api/bookings/:id/status
  * @access Private (Helper only)
  */
-const updateBookingStatus = async (req, res) => {
+const updateBookingStatus = async (req, res, next) => {
     try {
         const { status } = req.body;
         const booking = await Booking.findById(req.params.id);
@@ -272,8 +267,7 @@ const updateBookingStatus = async (req, res) => {
         await booking.save();
 
         res.json({ message: 'Booking status updated', booking });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -282,7 +276,7 @@ const updateBookingStatus = async (req, res) => {
  * @route DELETE /api/bookings/:id
  * @access Private (User only)
  */
-const cancelBooking = async (req, res) => {
+const cancelBooking = async (req, res, next) => {
     try {
         const booking = await Booking.findById(req.params.id);
 
@@ -306,8 +300,7 @@ const cancelBooking = async (req, res) => {
         }
 
         res.json({ message: 'Booking cancelled', booking });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 

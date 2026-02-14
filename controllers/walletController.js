@@ -4,7 +4,7 @@ const walletService = require('../services/walletService');
  * Get wallet balance
  * GET /api/wallet
  */
-exports.getWallet = async (req, res) => {
+exports.getWallet = async (req, res, next) => {
     try {
         const wallet = await walletService.getWalletBalance(req.user._id);
 
@@ -25,7 +25,7 @@ exports.getWallet = async (req, res) => {
  * Get transaction history
  * GET /api/wallet/transactions
  */
-exports.getTransactions = async (req, res) => {
+exports.getTransactions = async (req, res, next) => {
     try {
         const { limit = 20, page = 1, type, status } = req.query;
 
@@ -53,7 +53,7 @@ exports.getTransactions = async (req, res) => {
  * Request withdrawal
  * POST /api/wallet/withdraw
  */
-exports.requestWithdrawal = async (req, res) => {
+exports.requestWithdrawal = async (req, res, next) => {
     try {
         const { amount } = req.body;
 
@@ -85,7 +85,7 @@ exports.requestWithdrawal = async (req, res) => {
  * Get withdrawal history
  * GET /api/wallet/withdrawals
  */
-exports.getWithdrawals = async (req, res) => {
+exports.getWithdrawals = async (req, res, next) => {
     try {
         const { limit = 20, page = 1 } = req.query;
 
@@ -111,7 +111,7 @@ exports.getWithdrawals = async (req, res) => {
  * Add bank details
  * POST /api/wallet/bank-details
  */
-exports.addBankDetails = async (req, res) => {
+exports.addBankDetails = async (req, res, next) => {
     try {
         const { accountNumber, ifscCode, accountHolderName, bankName } = req.body;
 
@@ -147,7 +147,7 @@ exports.addBankDetails = async (req, res) => {
  * Get earnings summary
  * GET /api/wallet/earnings
  */
-exports.getEarnings = async (req, res) => {
+exports.getEarnings = async (req, res, next) => {
     try {
         const earnings = await walletService.getEarningsSummary(req.user._id);
 

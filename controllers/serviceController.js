@@ -5,7 +5,7 @@ const Service = require('../models/Service');
  * @route GET /api/services
  * @access Public
  */
-const getAllServices = async (req, res) => {
+const getAllServices = async (req, res, next) => {
     try {
         const { category } = req.query;
 
@@ -14,8 +14,7 @@ const getAllServices = async (req, res) => {
         const services = await Service.find(filter).sort({ name: 1 });
 
         res.json({ services, count: services.length });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -24,7 +23,7 @@ const getAllServices = async (req, res) => {
  * @route GET /api/services/:id
  * @access Public
  */
-const getServiceById = async (req, res) => {
+const getServiceById = async (req, res, next) => {
     try {
         const service = await Service.findById(req.params.id);
 
@@ -33,8 +32,7 @@ const getServiceById = async (req, res) => {
         }
 
         res.json({ service });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 

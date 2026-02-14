@@ -4,7 +4,7 @@ const reviewService = require('../services/reviewService');
  * Create a review
  * POST /api/reviews
  */
-exports.createReview = async (req, res) => {
+exports.createReview = async (req, res, next) => {
     try {
         const { revieweeId, bookingId, rating, comment, type } = req.body;
 
@@ -42,7 +42,7 @@ exports.createReview = async (req, res) => {
  * Get reviews for a user/helper
  * GET /api/reviews/:userId
  */
-exports.getReviews = async (req, res) => {
+exports.getReviews = async (req, res, next) => {
     try {
         const { userId } = req.params;
         const { limit = 20, page = 1, status = 'approved', sort = '-createdAt' } = req.query;
@@ -71,7 +71,7 @@ exports.getReviews = async (req, res) => {
  * Get reviews for a booking
  * GET /api/reviews/booking/:bookingId
  */
-exports.getBookingReviews = async (req, res) => {
+exports.getBookingReviews = async (req, res, next) => {
     try {
         const { bookingId } = req.params;
 
@@ -94,7 +94,7 @@ exports.getBookingReviews = async (req, res) => {
  * Update a review
  * PUT /api/reviews/:reviewId
  */
-exports.updateReview = async (req, res) => {
+exports.updateReview = async (req, res, next) => {
     try {
         const { reviewId } = req.params;
         const { rating, comment } = req.body;
@@ -122,7 +122,7 @@ exports.updateReview = async (req, res) => {
  * Delete a review
  * DELETE /api/reviews/:reviewId
  */
-exports.deleteReview = async (req, res) => {
+exports.deleteReview = async (req, res, next) => {
     try {
         const { reviewId } = req.params;
 
@@ -145,7 +145,7 @@ exports.deleteReview = async (req, res) => {
  * Flag a review
  * POST /api/reviews/:reviewId/flag
  */
-exports.flagReview = async (req, res) => {
+exports.flagReview = async (req, res, next) => {
     try {
         const { reviewId } = req.params;
         const { reason } = req.body;
@@ -177,7 +177,7 @@ exports.flagReview = async (req, res) => {
  * Moderate a review (admin only)
  * POST /api/reviews/:reviewId/moderate
  */
-exports.moderateReview = async (req, res) => {
+exports.moderateReview = async (req, res, next) => {
     try {
         const { reviewId } = req.params;
         const { status } = req.body;
@@ -209,7 +209,7 @@ exports.moderateReview = async (req, res) => {
  * Mark review as helpful
  * POST /api/reviews/:reviewId/helpful
  */
-exports.markHelpful = async (req, res) => {
+exports.markHelpful = async (req, res, next) => {
     try {
         const { reviewId } = req.params;
 
@@ -233,7 +233,7 @@ exports.markHelpful = async (req, res) => {
  * Add response to review
  * POST /api/reviews/:reviewId/response
  */
-exports.addResponse = async (req, res) => {
+exports.addResponse = async (req, res, next) => {
     try {
         const { reviewId } = req.params;
         const { comment } = req.body;
@@ -265,7 +265,7 @@ exports.addResponse = async (req, res) => {
  * Get rating statistics
  * GET /api/reviews/:userId/stats
  */
-exports.getRatingStats = async (req, res) => {
+exports.getRatingStats = async (req, res, next) => {
     try {
         const { userId } = req.params;
 
@@ -288,7 +288,7 @@ exports.getRatingStats = async (req, res) => {
  * Get flagged reviews (admin only)
  * GET /api/reviews/flagged
  */
-exports.getFlaggedReviews = async (req, res) => {
+exports.getFlaggedReviews = async (req, res, next) => {
     try {
         const { limit = 20, page = 1 } = req.query;
 

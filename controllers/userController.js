@@ -5,7 +5,7 @@ const User = require('../models/User');
  * @route GET /api/users/profile
  * @access Private (User only)
  */
-const getUserProfile = async (req, res) => {
+const getUserProfile = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id)
             .select('-password')
@@ -16,8 +16,7 @@ const getUserProfile = async (req, res) => {
         }
 
         res.json({ user });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -26,7 +25,7 @@ const getUserProfile = async (req, res) => {
  * @route PUT /api/users/profile
  * @access Private (User only)
  */
-const updateUserProfile = async (req, res) => {
+const updateUserProfile = async (req, res, next) => {
     try {
         const { name, phone, address } = req.body;
 
@@ -53,8 +52,7 @@ const updateUserProfile = async (req, res) => {
                 address: user.address
             }
         });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -63,7 +61,7 @@ const updateUserProfile = async (req, res) => {
  * @route GET /api/users/bookings
  * @access Private (User only)
  */
-const getUserBookings = async (req, res) => {
+const getUserBookings = async (req, res, next) => {
     try {
         const Booking = require('../models/Booking');
 
@@ -73,8 +71,7 @@ const getUserBookings = async (req, res) => {
             .sort({ createdAt: -1 });
 
         res.json({ bookings, count: bookings.length });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 

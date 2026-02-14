@@ -12,7 +12,7 @@ const generateToken = (id, role) => {
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
-const registerUser = async (req, res) => {
+const registerUser = async (req, res, next) => {
     try {
         const { name, email, password, phone, address } = req.body;
 
@@ -48,14 +48,14 @@ const registerUser = async (req, res) => {
             });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 
 // @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
-const loginUser = async (req, res) => {
+const loginUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
@@ -81,14 +81,14 @@ const loginUser = async (req, res) => {
             res.status(401).json({ message: 'Invalid email or password' });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 
 // @desc    Register a new helper
 // @route   POST /api/auth/helper/register
 // @access  Public
-const registerHelper = async (req, res) => {
+const registerHelper = async (req, res, next) => {
     try {
         const { name, email, password, phone, skills, location } = req.body;
 
@@ -126,14 +126,14 @@ const registerHelper = async (req, res) => {
             });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 
 // @desc    Login helper
 // @route   POST /api/auth/helper/login
 // @access  Public
-const loginHelper = async (req, res) => {
+const loginHelper = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
@@ -160,7 +160,7 @@ const loginHelper = async (req, res) => {
             res.status(401).json({ message: 'Invalid email or password' });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 

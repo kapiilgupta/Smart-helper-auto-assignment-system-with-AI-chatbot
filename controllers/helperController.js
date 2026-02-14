@@ -6,7 +6,7 @@ const Booking = require('../models/Booking');
  * @route GET /api/helpers/nearby
  * @access Public
  */
-const getNearbyHelpers = async (req, res) => {
+const getNearbyHelpers = async (req, res, next) => {
     try {
         const { lng, lat, maxDistance = 10000, skills } = req.query;
 
@@ -37,8 +37,7 @@ const getNearbyHelpers = async (req, res) => {
             .limit(20);
 
         res.json({ helpers, count: helpers.length });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -47,7 +46,7 @@ const getNearbyHelpers = async (req, res) => {
  * @route PUT /api/helpers/location
  * @access Private (Helper only)
  */
-const updateHelperLocation = async (req, res) => {
+const updateHelperLocation = async (req, res, next) => {
     try {
         const { coordinates } = req.body; // [longitude, latitude]
 
@@ -70,8 +69,7 @@ const updateHelperLocation = async (req, res) => {
             message: 'Location updated successfully',
             location: helper.location
         });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -80,7 +78,7 @@ const updateHelperLocation = async (req, res) => {
  * @route PUT /api/helpers/availability
  * @access Private (Helper only)
  */
-const toggleAvailability = async (req, res) => {
+const toggleAvailability = async (req, res, next) => {
     try {
         const { availability } = req.body;
 
@@ -98,8 +96,7 @@ const toggleAvailability = async (req, res) => {
             message: `Availability updated to ${availability ? 'online' : 'offline'}`,
             availability: helper.availability
         });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -108,7 +105,7 @@ const toggleAvailability = async (req, res) => {
  * @route GET /api/helpers/bookings
  * @access Private (Helper only)
  */
-const getHelperBookings = async (req, res) => {
+const getHelperBookings = async (req, res, next) => {
     try {
         const { status } = req.query;
 
@@ -123,8 +120,7 @@ const getHelperBookings = async (req, res) => {
             .sort({ createdAt: -1 });
 
         res.json({ bookings, count: bookings.length });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -133,7 +129,7 @@ const getHelperBookings = async (req, res) => {
  * @route PUT /api/helpers/bookings/:id/accept
  * @access Private (Helper only)
  */
-const acceptBooking = async (req, res) => {
+const acceptBooking = async (req, res, next) => {
     try {
         const { cancelResponseTimeout } = require('../services/reassignmentService');
 
@@ -167,8 +163,7 @@ const acceptBooking = async (req, res) => {
         }
 
         res.json({ message: 'Booking accepted successfully', booking });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 
@@ -177,7 +172,7 @@ const acceptBooking = async (req, res) => {
  * @route PUT /api/helpers/bookings/:id/reject
  * @access Private (Helper only)
  */
-const rejectBooking = async (req, res) => {
+const rejectBooking = async (req, res, next) => {
     try {
         const { reason } = req.body;
         const { handleHelperRejection, cancelResponseTimeout } = require('../services/reassignmentService');
@@ -217,8 +212,7 @@ const rejectBooking = async (req, res) => {
                 error: reassignError.message
             });
         }
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    } catch (error) { next(error);
     }
 };
 

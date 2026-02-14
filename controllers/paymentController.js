@@ -5,7 +5,7 @@ const { getAvailableGateways, paymentConfig } = require('../config/payment');
  * Create payment order
  * POST /api/payments/create-order
  */
-exports.createOrder = async (req, res) => {
+exports.createOrder = async (req, res, next) => {
     try {
         const { bookingId, amount, gateway = 'razorpay' } = req.body;
 
@@ -47,7 +47,7 @@ exports.createOrder = async (req, res) => {
  * Verify payment
  * POST /api/payments/verify
  */
-exports.verifyPayment = async (req, res) => {
+exports.verifyPayment = async (req, res, next) => {
     try {
         const { orderId, paymentId, signature, bookingId, gateway = 'razorpay' } = req.body;
 
@@ -107,7 +107,7 @@ exports.verifyPayment = async (req, res) => {
  * Get available payment methods
  * GET /api/payments/methods
  */
-exports.getPaymentMethods = async (req, res) => {
+exports.getPaymentMethods = async (req, res, next) => {
     try {
         const gateways = getAvailableGateways();
 
@@ -132,7 +132,7 @@ exports.getPaymentMethods = async (req, res) => {
  * Process refund
  * POST /api/payments/refund/:bookingId
  */
-exports.processRefund = async (req, res) => {
+exports.processRefund = async (req, res, next) => {
     try {
         const { bookingId } = req.params;
         const { reason = 'Booking cancelled' } = req.body;
@@ -159,7 +159,7 @@ exports.processRefund = async (req, res) => {
  * Razorpay webhook handler
  * POST /api/payments/webhook/razorpay
  */
-exports.razorpayWebhook = async (req, res) => {
+exports.razorpayWebhook = async (req, res, next) => {
     try {
         const signature = req.headers['x-razorpay-signature'];
 
@@ -201,7 +201,7 @@ exports.razorpayWebhook = async (req, res) => {
  * Stripe webhook handler
  * POST /api/payments/webhook/stripe
  */
-exports.stripeWebhook = async (req, res) => {
+exports.stripeWebhook = async (req, res, next) => {
     try {
         const signature = req.headers['stripe-signature'];
 
@@ -232,7 +232,7 @@ exports.stripeWebhook = async (req, res) => {
  * Pay with wallet
  * POST /api/payments/wallet-pay
  */
-exports.payWithWallet = async (req, res) => {
+exports.payWithWallet = async (req, res, next) => {
     try {
         const { bookingId, amount } = req.body;
 
