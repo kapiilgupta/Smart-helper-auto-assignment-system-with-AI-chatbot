@@ -2,7 +2,13 @@ const jwt = require('jsonwebtoken');
 
 // Middleware to verify JWT token
 const verifyToken = (req, res, next) => {
-    const token = req.header('Authorization')?.replace('Bearer ', '') || req.session?.token;
+    // Try Authorization header first, but filter out invalid values
+    let token = req.header('Authorization')?.replace('Bearer ', '');
+
+    // If header token is invalid (null, undefined, empty), fall through to session
+    if (!token || token === 'null' || token === 'undefined') {
+        token = req.session?.token;
+    }
 
     if (!token) {
         return res.status(401).json({ message: 'Access denied. No token provided.' });
@@ -38,9 +44,9 @@ const isUser = (req, res, next) => {
 // Middleware to check if user has specific role
 const authorize = (...roles) => {
     return (req, res, next) => {
-        if (!req.user.role || !roles.includes(req.user.role)) {
+        if (!req.user?.role || !roles.includes(req.user.role)) {
             return res.status(403).json({
-                message: `User role ${req.user.role} is not authorized to access this route`
+                message: `User role ${req.user?.role} is not authorized to access this route`
             });
         }
         next();

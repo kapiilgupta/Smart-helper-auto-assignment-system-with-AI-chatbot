@@ -37,7 +37,8 @@ const getNearbyHelpers = async (req, res, next) => {
             .limit(20);
 
         res.json({ helpers, count: helpers.length });
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -69,7 +70,8 @@ const updateHelperLocation = async (req, res, next) => {
             message: 'Location updated successfully',
             location: helper.location
         });
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -96,7 +98,8 @@ const toggleAvailability = async (req, res, next) => {
             message: `Availability updated to ${availability ? 'online' : 'offline'}`,
             availability: helper.availability
         });
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -120,7 +123,8 @@ const getHelperBookings = async (req, res, next) => {
             .sort({ createdAt: -1 });
 
         res.json({ bookings, count: bookings.length });
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -133,7 +137,13 @@ const acceptBooking = async (req, res, next) => {
     try {
         const { cancelResponseTimeout } = require('../services/reassignmentService');
 
-        const booking = await Booking.findById(req.params.id)
+        const { id } = req.params;
+        // Guard against null/invalid ObjectId
+        if (!id || id === 'null' || !id.match(/^[a-fA-F0-9]{24}$/)) {
+            return res.status(400).json({ message: 'Invalid booking ID' });
+        }
+
+        const booking = await Booking.findById(id)
             .populate('userId', '-password')
             .populate('serviceId');
 
@@ -141,7 +151,7 @@ const acceptBooking = async (req, res, next) => {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
-        if (booking.helperId.toString() !== req.user.id) {
+        if (booking.helperId?.toString() !== req.user.id) {
             return res.status(403).json({ message: 'Not authorized to accept this booking' });
         }
 
@@ -163,7 +173,8 @@ const acceptBooking = async (req, res, next) => {
         }
 
         res.json({ message: 'Booking accepted successfully', booking });
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -212,7 +223,8 @@ const rejectBooking = async (req, res, next) => {
                 error: reassignError.message
             });
         }
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 

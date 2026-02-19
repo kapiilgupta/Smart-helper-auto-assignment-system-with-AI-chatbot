@@ -99,7 +99,8 @@ const getUserBookings = async (req, res, next) => {
             .sort({ createdAt: -1 });
 
         res.json({ bookings });
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -117,7 +118,8 @@ const getHelperBookings = async (req, res, next) => {
             .sort({ createdAt: -1 });
 
         res.json({ bookings });
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -128,7 +130,13 @@ const getHelperBookings = async (req, res, next) => {
  */
 const getBookingById = async (req, res, next) => {
     try {
-        const booking = await Booking.findById(req.params.id)
+        const { id } = req.params;
+        // Guard against null/invalid ObjectId
+        if (!id || id === 'null' || !id.match(/^[a-fA-F0-9]{24}$/)) {
+            return res.status(400).json({ message: 'Invalid booking ID' });
+        }
+
+        const booking = await Booking.findById(id)
             .populate('serviceId')
             .populate('helperId', '-password')
             .populate('userId', '-password');
@@ -144,7 +152,8 @@ const getBookingById = async (req, res, next) => {
         }
 
         res.json({ booking });
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -180,7 +189,8 @@ const acceptBooking = async (req, res, next) => {
         }, io);
 
         res.json({ message: 'Booking accepted', booking });
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -229,7 +239,8 @@ const rejectBooking = async (req, res, next) => {
             });
         }
 
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -267,7 +278,8 @@ const updateBookingStatus = async (req, res, next) => {
         await booking.save();
 
         res.json({ message: 'Booking status updated', booking });
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -300,7 +312,8 @@ const cancelBooking = async (req, res, next) => {
         }
 
         res.json({ message: 'Booking cancelled', booking });
-    } catch (error) { next(error);
+    } catch (error) {
+        next(error);
     }
 };
 

@@ -584,7 +584,9 @@ class UserBookingManager {
      */
     getBookingIdFromUrl() {
         const params = new URLSearchParams(window.location.search);
-        return params.get('id');
+        const id = params.get('id');
+        // Guard: treat missing or literal "null" string as no ID
+        return (id && id !== 'null') ? id : null;
     }
 }
 

@@ -144,6 +144,17 @@ router.get('/helper/history', (req, res) => {
     });
 });
 
+// Admin login page (public)
+router.get('/admin/login', (req, res) => {
+    if (req.session.userId && req.session.role === 'admin') {
+        return res.redirect('/admin/dashboard');
+    }
+    res.render('login', {
+        title: 'Admin Login',
+        userType: 'admin'
+    });
+});
+
 // Admin routes (protected)
 router.get('/admin/dashboard', (req, res) => {
     if (!req.session.userId || req.session.role !== 'admin') {
