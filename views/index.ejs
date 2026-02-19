@@ -1,8 +1,213 @@
-<%- include('layout', { body: ` <div class="jumbotron text-center">
-    <h1 class="display-4">Welcome to Smart Helper</h1>
-    <p class="lead">Auto-Assign tasks efficiently with AI assistance.</p>
-    <hr class="my-4">
-    <p>Get started by logging in or registering.</p>
-    <a class="btn btn-primary btn-lg" href="/register" role="button">Get Started</a>
-    </div>
-    ` }) %>
+<%- include('partials/header') %>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+
+        <div class="container hero-content">
+            <div class="row align-items-center">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h1 class="hero-title">
+                        Get Expert Help<br>
+                        <span class="text-gradient">In Minutes</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        AI-powered auto-assignment connects you with the nearest, top-rated professional helper —
+                        plumbing, electrical, cleaning, and more.
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="/register" class="btn btn-gradient btn-gradient-lg btn-glow">
+                            <i class="bi bi-rocket-takeoff me-2"></i>Get Started Free
+                        </a>
+                        <a href="/login" class="btn btn-outline-gradient btn-gradient-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block" data-aos="fade-left" data-aos-delay="200">
+                    <div class="text-center">
+                        <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=550&q=80"
+                            alt="Professional Services" class="img-fluid"
+                            style="border-radius: var(--radius-2xl); box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-5 my-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title" data-aos="fade-up">How It <span class="text-gradient">Works</span></h2>
+                <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">
+                    Three simple steps to get professional help at your doorstep
+                </p>
+            </div>
+            <div class="row g-4 steps-section">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="0">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h5 class="step-title">Choose Service</h5>
+                        <p class="step-description">Browse our catalog and pick the service you need — from plumbing to
+                            cleaning.</p>
+                        <div class="step-connector d-none d-md-block"></div>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="150">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h5 class="step-title">AI Matches You</h5>
+                        <p class="step-description">Our smart algorithm finds the nearest, highest-rated available
+                            helper instantly.</p>
+                        <div class="step-connector d-none d-md-block"></div>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h5 class="step-title">Service Delivered</h5>
+                        <p class="step-description">Your helper arrives, gets the job done, and you rate the experience.
+                            Simple!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Counter -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-6 col-md-3" data-aos="zoom-in" data-aos-delay="0">
+                    <div class="stat-counter">
+                        <div class="stat-counter-value">500+</div>
+                        <div class="stat-counter-label">Helpers Available</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="stat-counter">
+                        <div class="stat-counter-value">10K+</div>
+                        <div class="stat-counter-label">Bookings Completed</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="stat-counter">
+                        <div class="stat-counter-value">4.8</div>
+                        <div class="stat-counter-label">Average Rating</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="stat-counter">
+                        <div class="stat-counter-value">15min</div>
+                        <div class="stat-counter-label">Avg Response Time</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5 my-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title" data-aos="fade-up">Why Choose <span class="text-gradient">Smart Helper?</span>
+                </h2>
+                <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">
+                    Built with cutting-edge technology for the best experience
+                </p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="0">
+                    <div class="glass-card p-4 h-100">
+                        <div class="service-card-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">AI Auto-Assignment</h5>
+                        <p class="text-secondary mb-0">Smart algorithm matches you with the best helper based on skills,
+                            distance, and ratings — automatically.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="150">
+                    <div class="glass-card p-4 h-100">
+                        <div class="service-card-icon" style="background: linear-gradient(135deg, #06b6d4, #0ea5e9);">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Location-Based</h5>
+                        <p class="text-secondary mb-0">Uses GPS to find helpers within 10km of you. Real-time tracking
+                            so you know exactly when they'll arrive.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="glass-card p-4 h-100">
+                        <div class="service-card-icon" style="background: linear-gradient(135deg, #10b981, #14b8a6);">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Verified Helpers</h5>
+                        <p class="text-secondary mb-0">All helpers are verified, rated, and reviewed. See ratings before
+                            booking for complete peace of mind.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="glass-card p-4 h-100">
+                        <div class="service-card-icon" style="background: linear-gradient(135deg, #f59e0b, #f97316);">
+                            <i class="bi bi-lightning-charge"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Instant Response</h5>
+                        <p class="text-secondary mb-0">30-second helper response timeout with automatic reassignment. No
+                            waiting, no hassle.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="250">
+                    <div class="glass-card p-4 h-100">
+                        <div class="service-card-icon" style="background: linear-gradient(135deg, #ec4899, #f472b6);">
+                            <i class="bi bi-chat-dots"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Real-Time Updates</h5>
+                        <p class="text-secondary mb-0">Live Socket.IO notifications keep you updated on booking status,
+                            helper arrival, and more.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="glass-card p-4 h-100">
+                        <div class="service-card-icon" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
+                            <i class="bi bi-wallet2"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Secure Payments</h5>
+                        <p class="text-secondary mb-0">Integrated wallet and secure payment system. Pay only when the
+                            service is completed.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5" data-aos="fade-up">
+        <div class="container">
+            <div class="text-center py-5 px-4"
+                style="background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: var(--radius-2xl); position: relative; overflow: hidden;">
+                <div
+                    style="position: absolute; inset:0; background: radial-gradient(circle at 50% 50%, rgba(99,102,241,0.15), transparent 70%);">
+                </div>
+                <div style="position: relative; z-index: 2;">
+                    <h2 class="text-white fw-bold mb-3" style="font-size: 2rem;">Ready to Get Started?</h2>
+                    <p class="text-white-50 mb-4" style="max-width: 500px; margin: 0 auto;">Join thousands of happy
+                        users who get reliable household services in minutes.</p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="/register" class="btn btn-gradient btn-gradient-lg btn-glow">
+                            <i class="bi bi-person-plus me-2"></i>Sign Up as User
+                        </a>
+                        <a href="/helper/register" class="btn btn-outline-gradient btn-gradient-lg"
+                            style="border-color: rgba(255,255,255,0.3); color: #fff;">
+                            <i class="bi bi-tools me-2"></i>Join as Helper
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <%- include('partials/footer') %>

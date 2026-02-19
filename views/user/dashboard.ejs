@@ -1,60 +1,58 @@
 <%- include('../partials/header') %>
 
     <div class="container my-5">
-        <h2 class="mb-4"><i class="bi bi-grid me-2"></i>My Dashboard</h2>
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
+            <div>
+                <h2 class="fw-bold mb-1">My Dashboard</h2>
+                <p class="text-muted mb-0">Manage your bookings and track services</p>
+            </div>
+            <a href="/user/booking" class="btn btn-gradient">
+                <i class="bi bi-plus-lg me-2"></i>New Booking
+            </a>
+        </div>
 
-        <!-- Quick Stats -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <i class="bi bi-calendar-check fs-1 text-primary mb-2"></i>
-                        <h3 class="mb-0" id="totalBookings">0</h3>
-                        <small class="text-muted">Total Bookings</small>
-                    </div>
+        <!-- Stat Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="0">
+                <div class="stat-card stat-primary">
+                    <div class="stat-icon icon-primary"><i class="bi bi-calendar-check"></i></div>
+                    <div class="stat-value" id="totalBookings">0</div>
+                    <div class="stat-label">Total Bookings</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <i class="bi bi-clock-history fs-1 text-warning mb-2"></i>
-                        <h3 class="mb-0" id="pendingBookings">0</h3>
-                        <small class="text-muted">Pending</small>
-                    </div>
+            <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-card stat-warning">
+                    <div class="stat-icon icon-warning"><i class="bi bi-clock-history"></i></div>
+                    <div class="stat-value" id="pendingBookings">0</div>
+                    <div class="stat-label">Pending</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <i class="bi bi-check-circle fs-1 text-success mb-2"></i>
-                        <h3 class="mb-0" id="completedBookings">0</h3>
-                        <small class="text-muted">Completed</small>
-                    </div>
+            <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-card stat-success">
+                    <div class="stat-icon icon-success"><i class="bi bi-check-circle"></i></div>
+                    <div class="stat-value" id="completedBookings">0</div>
+                    <div class="stat-label">Completed</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <i class="bi bi-x-circle fs-1 text-danger mb-2"></i>
-                        <h3 class="mb-0" id="cancelledBookings">0</h3>
-                        <small class="text-muted">Cancelled</small>
-                    </div>
+            <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="stat-card stat-danger">
+                    <div class="stat-icon icon-danger"><i class="bi bi-x-circle"></i></div>
+                    <div class="stat-value" id="cancelledBookings">0</div>
+                    <div class="stat-label">Cancelled</div>
                 </div>
             </div>
         </div>
 
         <!-- Booking History -->
-        <div class="card">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Booking History</h5>
+        <div data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-gradient"></i>Booking History</h5>
             </div>
-            <div class="card-body">
-                <div id="bookingsContainer">
-                    <div class="text-center py-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
+            <div id="bookingsContainer">
+                <div class="text-center py-5">
+                    <div class="loading-spinner"></div>
+                    <p class="text-muted mt-3">Loading bookings...</p>
                 </div>
             </div>
         </div>
@@ -63,12 +61,7 @@
     <script>
         async function loadBookings() {
             try {
-                const response = await fetch('/api/users/bookings', {
-                    headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem('token')
-                    }
-                });
-
+                const response = await fetch('/api/users/bookings');
                 const data = await response.json();
 
                 if (response.ok) {
@@ -76,14 +69,15 @@
                     updateStats(data.bookings);
                 } else {
                     document.getElementById('bookingsContainer').innerHTML = `
-                <div class="alert alert-danger">Failed to load bookings</div>
-            `;
+                        <div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>Failed to load bookings</div>
+                    `;
                 }
             } catch (error) {
                 console.error('Error:', error);
                 document.getElementById('bookingsContainer').innerHTML = `
-            <div class="alert alert-danger">Error loading bookings</div>
-        `;
+                    <div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>Error loading bookings.
+                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="loadBookings()">Retry</button></div>
+                `;
             }
         }
 
@@ -92,62 +86,69 @@
 
             if (bookings.length === 0) {
                 container.innerHTML = `
-            <div class="text-center py-5">
-                <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
-                <p class="text-muted">No bookings yet</p>
-                <a href="/user/booking" class="btn btn-primary">Book a Service</a>
-            </div>
-        `;
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="bi bi-inbox"></i></div>
+                        <h5 class="empty-state-title">No bookings yet</h5>
+                        <p class="empty-state-text">Book your first service and it will appear here.</p>
+                        <a href="/user/booking" class="btn btn-gradient">
+                            <i class="bi bi-calendar-check me-2"></i>Book a Service
+                        </a>
+                    </div>
+                `;
                 return;
             }
 
             container.innerHTML = '';
 
-            bookings.forEach(booking => {
+            bookings.forEach((booking, index) => {
+                const statusClass = booking.status.replace(/_/g, '-');
+                const statusLabel = getStatusLabel(booking.status);
                 const statusBadge = getStatusBadge(booking.status);
                 const bookingCard = `
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-3">
-                            <h6 class="mb-1">${booking.serviceId.name}</h6>
-                            <small class="text-muted">${new Date(booking.createdAt).toLocaleDateString()}</small>
-                        </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">Scheduled</small>
-                            <p class="mb-0">${new Date(booking.scheduledTime).toLocaleString()}</p>
-                        </div>
-                        <div class="col-md-2">
-                            <small class="text-muted">Helper</small>
-                            <p class="mb-0">${booking.helperId ? booking.helperId.name : 'Not assigned'}</p>
-                        </div>
-                        <div class="col-md-2">
-                            ${statusBadge}
-                        </div>
-                        <div class="col-md-2 text-end">
-                            <a href="/user/booking-status?id=${booking._id}" class="btn btn-sm btn-outline-primary">
-                                View Details
-                            </a>
+                    <div class="booking-card status-${statusClass}" style="animation: fadeInUp ${0.3 + index * 0.05}s ease-out">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <h6 class="fw-bold mb-1">${booking.serviceId?.name || 'Service'}</h6>
+                                <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>${new Date(booking.createdAt).toLocaleDateString()}</small>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted d-block">Scheduled</small>
+                                <span style="font-size: 0.9rem;">${new Date(booking.scheduledTime).toLocaleString()}</span>
+                            </div>
+                            <div class="col-md-2">
+                                <small class="text-muted d-block">Helper</small>
+                                <span style="font-size: 0.9rem;">${booking.helperId ? booking.helperId.name : '<span class="text-muted">Not assigned</span>'}</span>
+                            </div>
+                            <div class="col-md-2">
+                                ${statusBadge}
+                            </div>
+                            <div class="col-md-2 text-end mt-2 mt-md-0">
+                                <a href="/user/booking-status?id=${booking._id}" class="btn btn-sm btn-outline-gradient" style="font-size:0.8rem;">
+                                    <i class="bi bi-eye me-1"></i>Details
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        `;
+                `;
                 container.innerHTML += bookingCard;
             });
         }
 
         function getStatusBadge(status) {
             const badges = {
-                'pending': '<span class="badge bg-warning">Pending</span>',
-                'assigned': '<span class="badge bg-info">Assigned</span>',
-                'accepted': '<span class="badge bg-primary">Accepted</span>',
-                'in-progress': '<span class="badge bg-primary">In Progress</span>',
-                'completed': '<span class="badge bg-success">Completed</span>',
-                'cancelled': '<span class="badge bg-danger">Cancelled</span>',
-                'no_helper_available': '<span class="badge bg-secondary">No Helper</span>'
+                'pending': '<span class="status-badge status-searching"><i class="bi bi-hourglass-split"></i> Pending</span>',
+                'assigned': '<span class="status-badge status-assigned"><i class="bi bi-person-check"></i> Assigned</span>',
+                'accepted': '<span class="status-badge status-assigned"><i class="bi bi-check2-circle"></i> Accepted</span>',
+                'in-progress': '<span class="status-badge status-in-progress"><i class="bi bi-play-circle"></i> In Progress</span>',
+                'completed': '<span class="status-badge status-completed"><i class="bi bi-check-circle"></i> Completed</span>',
+                'cancelled': '<span class="status-badge status-cancelled"><i class="bi bi-x-circle"></i> Cancelled</span>',
+                'no_helper_available': '<span class="status-badge" style="background:#64748b;color:#fff"><i class="bi bi-exclamation-circle"></i> No Helper</span>'
             };
-            return badges[status] || '<span class="badge bg-secondary">' + status + '</span>';
+            return badges[status] || '<span class="status-badge" style="background:#64748b;color:#fff">' + status + '</span>';
+        }
+
+        function getStatusLabel(status) {
+            return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
 
         function updateStats(bookings) {

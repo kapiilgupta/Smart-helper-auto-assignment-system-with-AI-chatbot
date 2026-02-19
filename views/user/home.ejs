@@ -1,68 +1,90 @@
 <%- include('../partials/header') %>
 
-    <div class="container my-5">
-        <!-- Hero Section -->
-        <div class="row align-items-center mb-5">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-3">Get Help in <span style="color: var(--primary-color);">15
-                        Minutes</span></h1>
-                <p class="lead text-muted mb-4">Professional household services at your doorstep. Plumbing, electrical,
-                    cleaning, and more!</p>
-                <a href="/user/booking" class="btn btn-primary btn-lg px-5">
-                    <i class="bi bi-calendar-check me-2"></i>Book Now
-                </a>
-            </div>
-            <div class="col-lg-6">
-                <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600" alt="Services"
-                    class="img-fluid rounded shadow">
-            </div>
-        </div>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
 
-        <!-- Services Section -->
-        <div class="text-center mb-5">
-            <h2 class="fw-bold mb-3">Our Services</h2>
-            <p class="text-muted">Choose from our wide range of professional services</p>
-        </div>
-
-        <div class="row g-4" id="servicesContainer">
-            <div class="col-12 text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
+        <div class="container hero-content">
+            <div class="row align-items-center">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h1 class="hero-title">
+                        Get Help in<br>
+                        <span class="text-gradient">15 Minutes</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Professional household services at your doorstep. Plumbing, electrical, cleaning, and more!
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="/user/booking" class="btn btn-gradient btn-gradient-lg btn-glow">
+                            <i class="bi bi-calendar-check me-2"></i>Book Now
+                        </a>
+                        <a href="/user/dashboard" class="btn btn-outline-gradient btn-gradient-lg">
+                            <i class="bi bi-grid me-2"></i>Dashboard
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block" data-aos="fade-left" data-aos-delay="200">
+                    <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=550&q=80" alt="Services"
+                        class="img-fluid"
+                        style="border-radius: var(--radius-2xl); box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
                 </div>
             </div>
         </div>
+    </section>
 
-        <!-- How It Works -->
-        <div class="mt-5 pt-5">
-            <h2 class="text-center fw-bold mb-5">How It Works</h2>
-            <div class="row g-4">
-                <div class="col-md-4 text-center">
-                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                        style="width: 80px; height: 80px;">
-                        <i class="bi bi-search fs-1 text-primary"></i>
-                    </div>
-                    <h5>Choose Service</h5>
-                    <p class="text-muted">Select the service you need from our catalog</p>
-                </div>
-                <div class="col-md-4 text-center">
-                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                        style="width: 80px; height: 80px;">
-                        <i class="bi bi-person-check fs-1 text-primary"></i>
-                    </div>
-                    <h5>Get Matched</h5>
-                    <p class="text-muted">We assign the nearest available helper</p>
-                </div>
-                <div class="col-md-4 text-center">
-                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                        style="width: 80px; height: 80px;">
-                        <i class="bi bi-check-circle fs-1 text-primary"></i>
-                    </div>
-                    <h5>Service Done</h5>
-                    <p class="text-muted">Professional service delivered to your door</p>
+    <!-- Services Section -->
+    <section class="py-5 my-4">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title" data-aos="fade-up">Our <span class="text-gradient">Services</span></h2>
+                <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">
+                    Choose from our wide range of professional services
+                </p>
+            </div>
+
+            <div class="row g-4" id="servicesContainer">
+                <div class="col-12 text-center py-5">
+                    <div class="loading-spinner"></div>
+                    <p class="text-muted mt-3">Loading services...</p>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-5 bg-pattern">
+        <div class="container">
+            <h2 class="section-title text-center mb-5" data-aos="fade-up">How It <span
+                    class="text-gradient">Works</span></h2>
+            <div class="row g-4 steps-section">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="0">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h5 class="step-title">Choose Service</h5>
+                        <p class="step-description">Select the service you need from our catalog</p>
+                        <div class="step-connector d-none d-md-block"></div>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="150">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h5 class="step-title">Get Matched</h5>
+                        <p class="step-description">We assign the nearest available helper instantly</p>
+                        <div class="step-connector d-none d-md-block"></div>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h5 class="step-title">Service Done</h5>
+                        <p class="step-description">Professional service delivered to your door</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <script>
         // Fetch and display services
@@ -74,41 +96,46 @@
                 const container = document.getElementById('servicesContainer');
                 container.innerHTML = '';
 
-                data.services.forEach(service => {
+                data.services.forEach((service, index) => {
                     const serviceCard = `
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                                    <i class="bi bi-${getServiceIcon(service.category)} fs-3 text-primary"></i>
-                                </div>
-                                <div>
-                                    <h5 class="card-title mb-0">${service.name}</h5>
-                                    <small class="text-muted">${service.category}</small>
-                                </div>
+                    <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="${index * 100}">
+                        <div class="service-card">
+                            <div class="service-card-icon">
+                                <i class="bi bi-${getServiceIcon(service.category)}"></i>
                             </div>
-                            <p class="card-text text-muted">${service.description}</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-primary">₹${service.basePrice}</span>
-                                <span class="text-muted"><i class="bi bi-clock me-1"></i>${service.estimatedDuration} min</span>
+                            <h5 class="service-card-title">${service.name}</h5>
+                            <p class="service-card-description">${service.description}</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="service-card-price">₹${service.basePrice}</span>
+                                <span class="text-muted" style="font-size: 0.85rem;">
+                                    <i class="bi bi-clock me-1"></i>${service.estimatedDuration} min
+                                </span>
                             </div>
-                            <a href="/user/booking?service=${service._id}" class="btn btn-outline-primary w-100 mt-3">
-                                Book Now
+                            <a href="/user/booking?service=${service._id}" class="btn btn-gradient w-100">
+                                <i class="bi bi-calendar-check me-2"></i>Book Now
                             </a>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
                     container.innerHTML += serviceCard;
                 });
+
+                // Re-initialize AOS for dynamically added elements
+                if (typeof AOS !== 'undefined') AOS.refresh();
             } catch (error) {
                 console.error('Error loading services:', error);
                 document.getElementById('servicesContainer').innerHTML = `
-            <div class="col-12 text-center">
-                <p class="text-danger">Failed to load services. Please try again later.</p>
-            </div>
-        `;
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <div class="empty-state-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                            <h5 class="empty-state-title">Failed to load services</h5>
+                            <p class="empty-state-text">Please try again later.</p>
+                            <button class="btn btn-gradient" onclick="loadServices()">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Retry
+                            </button>
+                        </div>
+                    </div>
+                `;
             }
         }
 

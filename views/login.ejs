@@ -1,61 +1,130 @@
-<%- include('layout', { body: ` <div class="row justify-content-center mt-5">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-body">
-                <h2 class="card-title text-center mb-4">${title}</h2>
+<%- include('partials/header') %>
+
+    <div class="auth-page">
+        <!-- Left: Visual Side -->
+        <div class="auth-side auth-side-visual d-none d-lg-flex">
+            <div class="auth-visual-content" data-aos="fade-right">
+                <div class="auth-visual-icon">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                </div>
+                <h2 class="auth-visual-title">Welcome Back!</h2>
+                <p class="auth-visual-description">
+                    Log in to manage your bookings, track your helpers, and access all Smart Helper services instantly.
+                </p>
+                <div class="mt-4">
+                    <div class="d-flex align-items-center gap-3 mb-3" style="color: rgba(255,255,255,0.6)">
+                        <i class="bi bi-check-circle-fill" style="color: var(--primary-light)"></i>
+                        <span>AI-powered helper matching</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3" style="color: rgba(255,255,255,0.6)">
+                        <i class="bi bi-check-circle-fill" style="color: var(--primary-light)"></i>
+                        <span>Real-time booking updates</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3" style="color: rgba(255,255,255,0.6)">
+                        <i class="bi bi-check-circle-fill" style="color: var(--primary-light)"></i>
+                        <span>Secure & fast payments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Form Side -->
+        <div class="auth-side auth-side-form">
+            <div class="auth-form-container" data-aos="fade-left">
+                <h2 class="auth-form-title">
+                    <%= title %>
+                </h2>
+                <p class="auth-form-subtitle">Enter your credentials to continue</p>
+
                 <form id="loginForm">
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                        <label for="email" class="form-label">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text"
+                                style="border: 2px solid var(--border); border-right:none; background: var(--bg-white);">
+                                <i class="bi bi-envelope text-muted"></i>
+                            </span>
+                            <input type="email" class="form-control" id="email" name="email"
+                                placeholder="you@example.com" required style="border-left: none;">
+                        </div>
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="input-group">
+                            <span class="input-group-text"
+                                style="border: 2px solid var(--border); border-right:none; background: var(--bg-white);">
+                                <i class="bi bi-lock text-muted"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password" name="password"
+                                placeholder="••••••••" required style="border-left: none;">
+                        </div>
                     </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Login</button>
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-gradient btn-gradient-lg" id="loginBtn">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </button>
                     </div>
                 </form>
-                <div class="mt-3 text-center">
-                    <p>Don't have an account? <a href="/${userType === 'helper' ? 'helper/' : ''}register">Register
-                            here</a></p>
+
+                <div class="text-center">
+                    <p class="text-muted">Don't have an account?
+                        <a href="/<%= userType === 'helper' ? 'helper/' : '' %>register" class="fw-semibold">
+                            Register here
+                        </a>
+                    </p>
+                    <% if (userType==='helper' ) { %>
+                        <p class="text-muted mb-0"><i class="bi bi-person me-1"></i>Not a helper?
+                            <a href="/login" class="fw-semibold">Login as User</a>
+                        </p>
+                        <% } else { %>
+                            <p class="text-muted mb-0"><i class="bi bi-tools me-1"></i>Are you a helper?
+                                <a href="/helper/login" class="fw-semibold">Login as Helper</a>
+                            </p>
+                            <% } %>
                 </div>
                 <div id="message" class="mt-3"></div>
             </div>
         </div>
     </div>
-    </div>
 
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const messageDiv = document.getElementById('message');
+            const isHelper = window.location.pathname.includes('/helper/');
 
             try {
-                const response = await fetch('/api/auth/${userType === 'helper' ? 'helper / ' : ''}login', {
+                const apiUrl = isHelper ? '/api/auth/helper/login' : '/api/auth/login';
+                const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    messageDiv.innerHTML = '<div class="alert alert-success">Login successful! Redirecting...</div>';
+                    messageDiv.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>Login successful! Redirecting...</div>';
                     setTimeout(() => {
-                        window.location.href = '/dashboard';
-                    }, 1000);
+                        window.location.href = isHelper ? '/helper/dashboard' : '/user/home';
+                    }, 800);
                 } else {
-                    messageDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+                    messageDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>' + data.message + '</div>';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Login';
                 }
             } catch (error) {
-                messageDiv.innerHTML = '<div class="alert alert-danger">An error occurred. Please try again.</div>';
+                messageDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>An error occurred. Please try again.</div>';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Login';
             }
         });
     </script>
-    ` }) %>
+
+    <%- include('partials/footer') %>
